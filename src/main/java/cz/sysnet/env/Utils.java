@@ -99,6 +99,24 @@ public class Utils {
 		return out;	
 	}
 	
+	public static int dbfGetRecordCount(String dbfFilename) {
+		DBFReader reader = null;
+		int out = 0;
+		try {
+			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			out = reader.getRecordCount();
+			
+		} catch (Exception e) {
+			System.out.println("getRecordCount ERROR: " + e.getMessage()); 
+			e.printStackTrace();
+			out = 0;
+			
+		} finally {
+			DBFUtils.close(reader);
+		}
+		return out;
+	}
+	
 	public static List<Cisdod3> loadCisdod3List(String dbfFilename, int fromItem, int itemCount) {
 		List<Cisdod3> out = null;
 		DBFReader reader = null;
