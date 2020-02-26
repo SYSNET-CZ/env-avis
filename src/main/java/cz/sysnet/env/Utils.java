@@ -6,8 +6,14 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.Provider.Service;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -117,6 +123,102 @@ public class Utils {
 		return out;
 	}
 	
+	public static List<Sup> loadSupList(String dbfFilename, int fromItem, int itemCount) {
+		List<Sup> out = null;
+		DBFReader reader = null;
+		
+		try {
+			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			int numberOfFields = reader.getFieldCount();
+			Boolean ok = false;
+			List<String> fields = new ArrayList<String>();
+			for (int i = 0; i < numberOfFields; i++) {
+				DBFField field = reader.getField(i);
+				fields.add(field.getName());				
+			}
+			if (fields.equals(Sup.DBF_FIELD_LIST)) ok = true;
+			if (!ok) {
+				DBFUtils.close(reader);
+				throw new Exception("Datová struktura neodpovídá objektu 'Sup'");
+			}
+			if (fromItem > 0) reader.skipRecords(fromItem);
+			out = new ArrayList<Sup>();
+			Object[] rowObjects;
+			int j = 0;
+			while (((rowObjects = reader.nextRecord()) != null) && ((j < itemCount) || (itemCount <= 0))) {
+				Sup row = new Sup();
+				for (int i = 0; i < rowObjects.length; i++) {
+					Object data = rowObjects[i];
+					String dataStr = "";
+					if (data != null) dataStr = data.toString();
+					if(i==0) row.setSup(dataStr);
+					else if(i==1) row.setIco(dataStr);
+				}
+				out.add(row);
+				j++;
+			}
+		} catch (Exception e) {
+			System.out.println("loadSupList ERROR: " + e.getMessage()); 
+			e.printStackTrace();
+			out = null;
+			
+		} finally {
+			DBFUtils.close(reader);
+		}
+		return out;
+	}
+
+		
+	public static List<Cisdod> loadCisdodList(String dbfFilename, int fromItem, int itemCount) {
+		List<Cisdod> out = null;
+		DBFReader reader = null;
+		
+		try {
+			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			int numberOfFields = reader.getFieldCount();
+			Boolean ok = false;
+			List<String> fields = new ArrayList<String>();
+			for (int i = 0; i < numberOfFields; i++) {
+				DBFField field = reader.getField(i);
+				fields.add(field.getName());				
+			}
+			if (fields.equals(Cisdod.DBF_FIELD_LIST)) ok = true;
+			if (!ok) {
+				DBFUtils.close(reader);
+				throw new Exception("Datová struktura neodpovídá objektu 'Cisdod'");
+			}
+			if (fromItem > 0) reader.skipRecords(fromItem);
+			out = new ArrayList<Cisdod>();
+			Object[] rowObjects;
+			int j = 0;
+			while (((rowObjects = reader.nextRecord()) != null) && ((j < itemCount) || (itemCount <= 0))) {
+				Cisdod row = new Cisdod();
+				for (int i = 0; i < rowObjects.length; i++) {
+					Object data = rowObjects[i];
+					String dataStr = "";
+					if (data != null) dataStr = data.toString();
+					if(i==0) row.setDodavatel(dataStr);
+					else if(i==1) row.setSmlouva(dataStr);
+					else if(i==2) row.setCispart(dataStr);
+					else if(i==3) row.setVariab(dataStr);
+					else if(i==4) row.setSpecif(dataStr);
+					else if(i==5) row.setIco(dataStr);
+					else if(i==6) row.setDny(Long.parseLong(dataStr));					
+				}
+				out.add(row);
+				j++;
+			}
+		} catch (Exception e) {
+			System.out.println("loadCisdodList ERROR: " + e.getMessage()); 
+			e.printStackTrace();
+			out = null;
+			
+		} finally {
+			DBFUtils.close(reader);
+		}
+		return out;
+	}
+
 	public static List<Cisdod3> loadCisdod3List(String dbfFilename, int fromItem, int itemCount) {
 		List<Cisdod3> out = null;
 		DBFReader reader = null;
@@ -395,4 +497,77 @@ public class Utils {
 		}		
 	}
 	
+	public static String hashMd5(String value) {
+		return hash(value, null);
+	}
+	
+	public static String hashSha1(String value) {
+		return hash(value, "SHA-1");
+	}
+	
+	public static String hashSha256(String value) {
+		return hash(value, "SHA-256");
+	}
+	
+	
+	public static String hash(String value, String algorithm) {
+		//MD5, SHA-1, SHA-256
+		if (algorithm == null) algorithm = "MD5";
+		try {
+			MessageDigest md = MessageDigest.getInstance(algorithm);
+			byte[] array = md.digest(value.getBytes());
+			StringBuffer sb = new StringBuffer();
+			for (int i = 0; i < array.length; ++i) {
+				sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+			}
+			return sb.toString();
+		} catch (NoSuchAlgorithmException e) {
+			System.out.println("Utils.hash (" + algorithm + ") ERROR: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static void printAlhoritms() {
+		Provider[] providers = Security.getProviders();
+        for (Provider provider : providers) {
+            showHashAlgorithms(provider, MessageDigest.class);
+        }	
+	}
+	
+	
+	private static final void showHashAlgorithms(Provider prov, Class<?> typeClass) {
+        String type = typeClass.getSimpleName();
+
+        List<Service> algos = new ArrayList<Service>();
+
+        Set<Service> services = prov.getServices();
+        for (Service service : services) {
+            if (service.getType().equalsIgnoreCase(type)) {
+                algos.add(service);
+            }
+        }
+
+        if (!algos.isEmpty()) {
+            System.out.printf(" --- Provider %s, version %.2f --- %n", prov.getName(), prov.getVersion());
+            for (Service service : algos) {
+                String algo = service.getAlgorithm();
+                System.out.printf("Algorithm name: \"%s\"%n", algo);
+
+
+            }
+        }
+
+        // --- find aliases (inefficiently)
+        Set<Object> keys = prov.keySet();
+        for (Object key : keys) {
+            final String prefix = "Alg.Alias." + type + ".";
+            if (key.toString().startsWith(prefix)) {
+                String value = prov.get(key.toString()).toString();
+                System.out.printf("Alias: \"%s\" -> \"%s\"%n",
+                        key.toString().substring(prefix.length()),
+                        value);
+            }
+        }
+    }
 }

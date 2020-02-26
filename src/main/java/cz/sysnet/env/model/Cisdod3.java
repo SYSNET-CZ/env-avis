@@ -7,6 +7,8 @@ import java.util.List;
 
 import com.google.gson.Gson;
 
+import cz.sysnet.env.Utils;
+
 /**
  * CISDOD3.DBF – realizační smlouvy
  * 
@@ -91,5 +93,21 @@ public class Cisdod3 implements Serializable {
 		Gson gson = new Gson();
 		String json = gson.toJson(this);
 		return json;		
+	}
+	
+	public String hashString() {
+		return this.hashString(null);
+	}
+	
+	public String hashString(String algoritm) {
+		return Utils.hash(this.toString(), algoritm);		
+	}
+	
+	public boolean checkHashString(String hash) {
+		return this.checkHashString(hash, null);
+	}
+	
+	public boolean checkHashString(String hash, String algoritm) {
+		return hash.equals(this.hashString(algoritm)); 		
 	}
 }

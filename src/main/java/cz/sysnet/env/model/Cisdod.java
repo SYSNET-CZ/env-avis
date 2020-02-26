@@ -7,6 +7,8 @@ import java.util.List;
 
 import com.google.gson.Gson;
 
+import cz.sysnet.env.Utils;
+
 /**
  * CISDOD.DBF – ekologické smlouvy
  * 
@@ -29,7 +31,7 @@ public class Cisdod implements Serializable {
 	String variab;			// Variabilní symbol
 	String specif;			// Specifický symbol
 	String ico;				// IČO
-	int dny;				// Počet dní
+	long dny;				// Počet dní
 	
 	
 	public String getDodavatel() {
@@ -68,10 +70,10 @@ public class Cisdod implements Serializable {
 	public void setIco(String ico) {
 		this.ico = ico;
 	}
-	public int getDny() {
+	public long getDny() {
 		return dny;
 	}
-	public void setDny(int dny) {
+	public void setDny(long dny) {
 		this.dny = dny;
 	}
 	
@@ -80,5 +82,21 @@ public class Cisdod implements Serializable {
 		Gson gson = new Gson();
 		String json = gson.toJson(this);
 		return json;		
+	}
+
+	public String hashString() {
+		return this.hashString(null);
+	}
+	
+	public String hashString(String algoritm) {
+		return Utils.hash(this.toString(), algoritm);		
+	}
+	
+	public boolean checkHashString(String hash) {
+		return this.checkHashString(hash, null);
+	}
+	
+	public boolean checkHashString(String hash, String algoritm) {
+		return hash.equals(this.hashString(algoritm)); 		
 	}
 }
