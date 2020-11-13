@@ -1,5 +1,6 @@
 package cz.sysnet.env;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.linuxense.javadbf.DBFDataType;
 import com.linuxense.javadbf.DBFField;
@@ -30,17 +33,39 @@ import cz.sysnet.env.model.Faktura;
 import cz.sysnet.env.model.Sup;
 
 public class Utils {
-	public static String DEFAULT_CHARSET_NAME_DBF = "Cp1250";
-	public static String DEFAULT_CHARSET_NAME_OTPUT = "utf-8";
+	public static final String DEFAULT_CHARSET_NAME_DBF = "Cp1250";
+	public static final String DEFAULT_CHARSET_NAME_OTPUT = "utf-8";
+	
+	private static final Logger LOG = LogManager.getLogger(Utils.class);
+	
 	
 	private static int dotCounter = 0;
 	
 	
-	public static String dbfToCsv(String dbfFileName) throws Exception {
+	private Utils() {
+		throw new IllegalStateException("Utility class");
+	}
+	
+	public static boolean logChecker() {
+		//PropertyConfigurator.configure("log4j.properties");
+		LOG.trace("start");
+		LOG.debug("debug message");
+		LOG.info("info message");
+		LOG.warn("warning message");
+		LOG.error("error message");
+		LOG.trace("end");
+		
+		return true;
+			
+	}
+	
+	
+	
+	public static String dbfToCsv(String dbfFileName) {
 		return dbfToCsv(dbfFileName, null, null, null);
 	}
 	
-	public static String dbfToCsv(String dbfFileName, String csvFileName) throws Exception {
+	public static String dbfToCsv(String dbfFileName, String csvFileName)  {
 		return dbfToCsv(dbfFileName, csvFileName, null, null);
 	}
 	
@@ -52,9 +77,9 @@ public class Utils {
 		String out = null;
 		
 		try {
-			if (dbfFileName == null) throw new Exception("Chybí vstupní DBF");
+			if (dbfFileName == null) throw new EnvException("Chybí vstupní DBF");
 			File inFile = new File(dbfFileName);
-			if (!inFile.exists()) throw new Exception("Vstupní DBF neexistuje");
+			if (!inFile.exists()) throw new EnvException("Vstupní DBF neexistuje");
 			
 			String outFilename = FilenameUtils.removeExtension(inFile.getAbsolutePath()) + ".csv";
 			if (csvFileName == null) csvFileName = outFilename;
@@ -92,10 +117,11 @@ public class Utils {
 			}
 			writer.flush();
 			out = outFile.getAbsolutePath();
+			LOG.info("dbfToCsv: written file {}", out);
+			
 			
 		} catch (Exception e) {
-			System.out.println("dbfToCsv: " + e.getMessage());
-			e.printStackTrace();
+			LOG.error("dbfToCsv: {}", e.getMessage(), e);
 			out = null;
 			
 		} finally {
@@ -106,19 +132,27 @@ public class Utils {
 	}
 	
 	public static int dbfGetRecordCount(String dbfFilename) {
+		FileInputStream is = null;
 		DBFReader reader = null;
 		int out = 0;
 		try {
-			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			is = new FileInputStream(dbfFilename);
+			reader = new DBFReader(is, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			out = reader.getRecordCount();
+			LOG.info("dbfGetRecordCount: dbf {}, recnum={}", dbfFilename, out);
 			
 		} catch (Exception e) {
-			System.out.println("getRecordCount ERROR: " + e.getMessage()); 
-			e.printStackTrace();
+			LOG.error("getRecordCount: {}", e.getMessage(), e);
 			out = 0;
 			
 		} finally {
-			DBFUtils.close(reader);
+			try {
+				DBFUtils.close(reader);
+				is.close();					
+			} catch (Exception e) {
+				LOG.error("getRecordCount (finally): {}", e.getMessage(), e);
+				e.printStackTrace();
+			}			
 		}
 		return out;
 	}
@@ -139,7 +173,7 @@ public class Utils {
 			if (fields.equals(Sup.DBF_FIELD_LIST)) ok = true;
 			if (!ok) {
 				DBFUtils.close(reader);
-				throw new Exception("Datová struktura neodpovídá objektu 'Sup'");
+				throw new EnvException("Datová struktura neodpovídá objektu 'Sup'");
 			}
 			if (fromItem > 0) reader.skipRecords(fromItem);
 			out = new ArrayList<Sup>();
@@ -157,9 +191,9 @@ public class Utils {
 				out.add(row);
 				j++;
 			}
+			LOG.info("loadSupList: {} done", dbfFilename + ", " + Integer.toString(fromItem) + ", " + Integer.toString(itemCount));
 		} catch (Exception e) {
-			System.out.println("loadSupList ERROR: " + e.getMessage()); 
-			e.printStackTrace();
+			LOG.error("loadSupList: {}", e.getMessage(), e);
 			out = null;
 			
 		} finally {
@@ -185,7 +219,7 @@ public class Utils {
 			if (fields.equals(Cisdod.DBF_FIELD_LIST)) ok = true;
 			if (!ok) {
 				DBFUtils.close(reader);
-				throw new Exception("Datová struktura neodpovídá objektu 'Cisdod'");
+				throw new EnvException("Datová struktura neodpovídá objektu 'Cisdod'");
 			}
 			if (fromItem > 0) reader.skipRecords(fromItem);
 			out = new ArrayList<Cisdod>();
@@ -209,8 +243,7 @@ public class Utils {
 				j++;
 			}
 		} catch (Exception e) {
-			System.out.println("loadCisdodList ERROR: " + e.getMessage()); 
-			e.printStackTrace();
+			LOG.error("loadCisdodList: {}", e.getMessage(), e);
 			out = null;
 			
 		} finally {
@@ -235,7 +268,7 @@ public class Utils {
 			if (fields.equals(Cisdod3.DBF_FIELD_LIST)) ok = true;
 			if (!ok) {
 				DBFUtils.close(reader);
-				throw new Exception("Datová struktura neodpovídá objektu 'Cisdod3'");
+				throw new EnvException("Datová struktura neodpovídá objektu 'Cisdod3'");
 			}
 			if (fromItem > 0) reader.skipRecords(fromItem);
 			out = new ArrayList<Cisdod3>();
@@ -261,8 +294,7 @@ public class Utils {
 				j++;
 			}
 		} catch (Exception e) {
-			System.out.println("loadCisdod3List ERROR: " + e.getMessage()); 
-			e.printStackTrace();
+			LOG.error("loadCisdod3List: {}", e.getMessage(), e);
 			out = null;
 			
 		} finally {
@@ -271,67 +303,137 @@ public class Utils {
 		return out;
 	}
 	
+	public static boolean checkFaktura(String dbfFilename) {
+		int i = 0;
+		int j = 0;
+		int rcnt = 0;
+		int fcnt = 0;
+		try {
+			DBFReader reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			fcnt = reader.getFieldCount();
+			rcnt = reader.getRecordCount();			
+			LOG.info("checkFaktura: {}", dbfFilename + ", rows=" + Integer.toString(rcnt));
+			
+			DBFRow dbfRow = null;
+			while (((dbfRow = reader.nextRow()) != null)) {
+				j++;
+				Faktura fa = new Faktura();
+				i = 0;
+				fa.setPorcis(dbfRow.getString(i)); i++;		// 0
+				fa.setDodavatel(dbfRow.getString(i)); i++;	// 1
+				fa.setIcod(dbfRow.getString(i)); i++;		// 2
+				fa.setSmlouva(dbfRow.getString(i)); i++;	// 3
+				fa.setCispart(dbfRow.getString(i)); i++;	// 4
+				fa.setCisfa(dbfRow.getString(i)); i++;		// 5
+				fa.setCastka(dbfRow.getDouble(i)); i++;		// 6
+				fa.setUhrada(dbfRow.getString(i)); i++;		// 7
+				fa.setCuctu(dbfRow.getString(i)); i++;		// 8
+				fa.setBanka(dbfRow.getString(i)); i++;		// 9
+				fa.setVystavena(dbfRow.getDate(i)); i++;	// 10
+				fa.setDosla(dbfRow.getDate(i)); i++;		// 11
+				fa.setLikvidace(dbfRow.getDate(i)); i++;	// 12
+				fa.setVrackprop(dbfRow.getDate(i)); i++;	// 13
+				fa.setVariab(dbfRow.getString(i)); i++;		// 14
+				fa.setSpecif(dbfRow.getString(i)); i++;		// 15
+				fa.setDruhfa(dbfRow.getString(i)); i++;		// 16
+				fa.setSplatna(dbfRow.getDate(i)); i++;		// 17
+				fa.setUhrazena(dbfRow.getDate(i)); i++;		// 18
+				fa.setVracena(dbfRow.getDate(i)); i++;		// 19
+				fa.setZauctovano(dbfRow.getDate(i)); i++;	// 20
+				fa.setSup(dbfRow.getString(i)); i++;		// 21
+				fa.setIcos(dbfRow.getString(i)); i++;		// 22
+				fa.setPu(dbfRow.getString(i)); i++;			// 23
+				fa.setKodproj(dbfRow.getString(i)); i++;	// 24
+				fa.setProcentaza(dbfRow.getDouble(i)); i++;	// 25
+				fa.setCastkaza(dbfRow.getDouble(i)); i++;	// 26
+				fa.setSplatnaza(dbfRow.getDate(i)); i++;	// 27
+				fa.setCastkazaca(dbfRow.getDouble(i)); i++;	// 28
+				fa.setUhrazenaza(dbfRow.getDate(i)); i++;	// 29
+				fa.setCastkabdph(dbfRow.getDouble(i)); i++;	// 30		
+				//System.out.println(Integer.toString(j) + "/" + Integer.toString(rcnt));
+
+			}					
+			LOG.info("checkFaktura: {} OK", dbfFilename);
+			return true;
+			
+		} catch (Exception e) {
+			String msg = "ROW: " + Integer.toString(j) + "/" + Integer.toString(rcnt);
+			msg += ", COL: " + Integer.toString(i) + "/" + Integer.toString(fcnt);
+			msg += ": " + e.getMessage();
+			LOG.error("checkFaktura: {}", msg, e);			
+			return false;
+		}
+	}
+	
 	public static List<Faktura> loadFakturaList(String dbfFilename, int fromItem, int itemCount) {
 		List<Faktura> out = null;
 		DBFReader reader = null;
+		int m = 0;
+		int n = 0;
+		int rcnt = 0;
+		int fcnt = 0;
 		
 		try {
 			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			int numberOfFields = reader.getFieldCount();
-			Boolean ok = false;
 			List<String> fields = new ArrayList<String>();
 			for (int i = 0; i < numberOfFields; i++) {
 				DBFField field = reader.getField(i);
 				fields.add(field.getName());				
 			}
-			if (fields.equals(Faktura.DBF_FIELD_LIST)) ok = true;
-			if (!ok) {
+			if (!fields.equals(Faktura.DBF_FIELD_LIST)) { 
 				DBFUtils.close(reader);
-				throw new Exception("Datová struktura neodpovídá objektu 'Faktura'");
+				throw new EnvException("Datová struktura neodpovídá objektu 'Faktura'");
 			}
+			rcnt = reader.getRecordCount();			
 			if (fromItem > 0) reader.skipRecords(fromItem);
+			m = fromItem;
 			out = new ArrayList<Faktura>();
 			DBFRow dbfRow = null;
 			int j = 0;
 			while (((dbfRow = reader.nextRow()) != null) && ((j < itemCount) || (itemCount <= 0))) {
+				m++;
 				Faktura row = new Faktura();
-				row.setPorcis(dbfRow.getString(0));
-				row.setDodavatel(dbfRow.getString(1));
-				row.setIcod(dbfRow.getString(2));
-				row.setSmlouva(dbfRow.getString(3));
-				row.setCispart(dbfRow.getString(4));
-				row.setCisfa(dbfRow.getString(5));
-				row.setCastka(dbfRow.getDouble(6));
-				row.setUhrada(dbfRow.getString(7));
-				row.setCuctu(dbfRow.getString(8));
-				row.setBanka(dbfRow.getString(9));
-				row.setVystavena(dbfRow.getDate(10));
-				row.setDosla(dbfRow.getDate(11));
-				row.setLikvidace(dbfRow.getDate(12));
-				row.setVrackprop(dbfRow.getDate(13));
-				row.setVariab(dbfRow.getString(14));
-				row.setSpecif(dbfRow.getString(15));
-				row.setDruhfa(dbfRow.getString(16));
-				row.setSplatna(dbfRow.getDate(17));
-				row.setUhrazena(dbfRow.getDate(18));
-				row.setVracena(dbfRow.getDate(19));
-				row.setZauctovano(dbfRow.getDate(20));
-				row.setSup(dbfRow.getString(21));
-				row.setIcos(dbfRow.getString(22));
-				row.setPu(dbfRow.getString(23));
-				row.setKodproj(dbfRow.getString(24));
-				row.setProcentaza(dbfRow.getDouble(25));
-				row.setCastkaza(dbfRow.getDouble(26));
-				row.setSplatnaza(dbfRow.getDate(27));
-				row.setCastkazaca(dbfRow.getDouble(28));
-				row.setUhrazenaza(dbfRow.getDate(29));
-				row.setCastkabdph(dbfRow.getDouble(30));
+				n = 0;				
+				row.setPorcis(dbfRow.getString(n)); n++;		// 0
+				row.setDodavatel(dbfRow.getString(n)); n++;		// 1
+				row.setIcod(dbfRow.getString(n)); n++;			// 2
+				row.setSmlouva(dbfRow.getString(n)); n++;		// 3
+				row.setCispart(dbfRow.getString(n)); n++;		// 4
+				row.setCisfa(dbfRow.getString(n)); n++;			// 5
+				row.setCastka(dbfRow.getDouble(n)); n++;		// 6
+				row.setUhrada(dbfRow.getString(n)); n++;		// 7
+				row.setCuctu(dbfRow.getString(n)); n++;			// 8
+				row.setBanka(dbfRow.getString(n)); n++;			// 9
+				row.setVystavena(dbfRow.getDate(n)); n++;		// 10
+				row.setDosla(dbfRow.getDate(n)); n++;			// 11
+				row.setLikvidace(dbfRow.getDate(n)); n++;		// 12
+				row.setVrackprop(dbfRow.getDate(n)); n++;		// 13
+				row.setVariab(dbfRow.getString(n)); n++;		// 14
+				row.setSpecif(dbfRow.getString(n)); n++;		// 15
+				row.setDruhfa(dbfRow.getString(n)); n++;		// 16
+				row.setSplatna(dbfRow.getDate(n)); n++;			// 17
+				row.setUhrazena(dbfRow.getDate(n)); n++;		// 18
+				row.setVracena(dbfRow.getDate(n)); n++;			// 19
+				row.setZauctovano(dbfRow.getDate(n)); n++;		// 20
+				row.setSup(dbfRow.getString(n)); n++;			// 21
+				row.setIcos(dbfRow.getString(n)); n++;			// 22
+				row.setPu(dbfRow.getString(n)); n++;			// 23
+				row.setKodproj(dbfRow.getString(n)); n++;		// 24
+				row.setProcentaza(dbfRow.getDouble(n)); n++;	// 25
+				row.setCastkaza(dbfRow.getDouble(n)); n++;		// 26
+				row.setSplatnaza(dbfRow.getDate(n)); n++;		// 27
+				row.setCastkazaca(dbfRow.getDouble(n)); n++;	// 28
+				row.setUhrazenaza(dbfRow.getDate(n)); n++;		// 29
+				row.setCastkabdph(dbfRow.getDouble(n)); n++;	// 30		
 				out.add(row);
 				j++;
 			}
 		} catch (Exception e) {
-			System.out.println("loadFakturaList ERROR: " + e.getMessage()); 
-			e.printStackTrace();
+			String msg = "ROW: " + Integer.toString(m) + "/" + Integer.toString(rcnt);
+			msg += ", COL: " + Integer.toString(n) + "/" + Integer.toString(fcnt);
+			msg += ": " + e.getMessage();
+			LOG.error("loadFakturaList: {}", msg, e);			
 			out = null;
 			
 		} finally {
@@ -344,7 +446,7 @@ public class Utils {
 		DBFWriter writer = null;
 		String outFilename = null;
 		try {
-			if (objectList == null) throw new Exception("Vstupní data jsou null");
+			if (objectList == null) throw new EnvException("Vstupní data jsou null");
 			if (dbfFilename == null) dbfFilename = Sup.FILE_NAME;
 			File outFile = new File(dbfFilename);
 			outFilename = outFile.getAbsolutePath();
@@ -365,8 +467,8 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			System.out.println("storeSupToDbf ERROR: " + e.getMessage());
-			e.printStackTrace();
+			LOG.error("storeSupToDbf: {}", e.getMessage(), e);
+			outFilename = null;
 			
 		} finally {
 			DBFUtils.close(writer);
@@ -379,7 +481,7 @@ public class Utils {
 		DBFWriter writer = null;
 		String outFilename = null;
 		try {
-			if (objectList == null) throw new Exception("Vstupní data jsou null");
+			if (objectList == null) throw new EnvException("Vstupní data jsou null");
 			if (dbfFilename == null) dbfFilename = Cisdod.FILE_NAME;
 			File outFile = new File(dbfFilename);
 			outFilename = outFile.getAbsolutePath();
@@ -410,8 +512,8 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			System.out.println("storeCisdodToDbf ERROR: " + e.getMessage());
-			e.printStackTrace();
+			LOG.error("storeCisdodToDbf: {}", e.getMessage(), e);
+			outFilename = null;
 			
 		} finally {
 			DBFUtils.close(writer);
@@ -424,7 +526,7 @@ public class Utils {
 		DBFWriter writer = null;
 		String outFilename = null;
 		try {
-			if (objectList == null) throw new Exception("Vstupní data jsou null");
+			if (objectList == null) throw new EnvException("Vstupní data jsou null");
 			if (dbfFilename == null) dbfFilename = Cisdod3.FILE_NAME;
 			File outFile = new File(dbfFilename);
 			outFilename = outFile.getAbsolutePath();
@@ -461,8 +563,8 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			System.out.println("storeCisdod3ToDbf ERROR: " + e.getMessage());
-			e.printStackTrace();
+			LOG.error("storeCisdod3ToDbf: {}", e.getMessage(), e);
+			outFilename = null;
 			
 		} finally {
 			DBFUtils.close(writer);
@@ -521,9 +623,8 @@ public class Utils {
 				sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
 			}
 			return sb.toString();
-		} catch (NoSuchAlgorithmException e) {
-			System.out.println("Utils.hash (" + algorithm + ") ERROR: " + e.getMessage());
-			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {			
+			LOG.error("hash: {}", e.getMessage(), e);
 		}
 		return null;
 	}
@@ -553,8 +654,6 @@ public class Utils {
             for (Service service : algos) {
                 String algo = service.getAlgorithm();
                 System.out.printf("Algorithm name: \"%s\"%n", algo);
-
-
             }
         }
 

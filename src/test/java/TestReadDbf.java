@@ -16,17 +16,32 @@ public class TestReadDbf {
 	String dbfFileCisdod = "src/test/resources/CISDOD.DBF";
 	String dbfFileCisdod3 = "src/test/resources/CISDOD3.dbf";
 	String dbfFileFaktura = "src/test/resources/FAKTLN.DBF";
+	//String dbfFileFaktura = "e:\\temp\\FAKTLN\\FAKTLN.DBF";
+	
 	
 	String dbfFileCisdod3a = "src/test/resources/CISDOD3a.DBF";
+	
+	
+	@Test
+	public void testLogger() {
+		boolean out = Utils.logChecker();
+		assertTrue(out);
+	}
+	
+	@Test
+	public void testDbfCheck() {
+		boolean out = Utils.checkFaktura(dbfFileFaktura);
+		assertTrue(out);
+	}
 
 	
 	@Test
 	public void testReadSup() {
 		List<Sup> dataList = Utils.loadSupList(dbfFileSup, 0, 10);
-		assertTrue(dataList != null);		
+		assertNotNull(dataList);		
 		Sup data = dataList.get(0);
 		// System.out.println(data.toString());
-		assertEquals(data.getIco(), "27624218");
+		assertEquals("27624218", data.getIco());
 		
 		// System.out.println(data.hashString());
 		assertTrue(data.checkHashString("7a097fbb8b94fe984f05115283020b9f"));				
@@ -35,10 +50,10 @@ public class TestReadDbf {
 	@Test
 	public void testReadCisdod() {
 		List<Cisdod> dataList = Utils.loadCisdodList(dbfFileCisdod, 0, 10);
-		assertTrue(dataList != null);		
+		assertNotNull(dataList);		
 		Cisdod data = dataList.get(0);
 		// System.out.println(data.toString());
-		assertEquals(data.getIco(), "28674286");
+		assertEquals("28674286", data.getIco());
 		
 		String h = data.hashString();
 		// System.out.println(data.hashString());
@@ -50,10 +65,10 @@ public class TestReadDbf {
 	@Test
 	public void testReadCisdod3() {
 		List<Cisdod3> dataList = Utils.loadCisdod3List(dbfFileCisdod3, 0, 10);
-		assertTrue(dataList != null);		
+		assertNotNull(dataList);		
 		Cisdod3 data = dataList.get(0);
 		//System.out.println(data.toString());
-		assertEquals(data.getIco(), "25513231");
+		assertEquals("25513231", data.getIco());
 		
 		// System.out.println(data.hashString());
 		assertTrue(data.checkHashString("e43183a47ca16a92bdef68f2d61d9a61"));		
@@ -63,10 +78,10 @@ public class TestReadDbf {
 	@Test
 	public void testReadFaktura() {
 		List<Faktura> dataList = Utils.loadFakturaList(dbfFileFaktura, 0, 10);
-		assertTrue(dataList != null);		
+		assertNotNull(dataList);		
 		Faktura data = dataList.get(0);
 		//System.out.println(data.toString());
-		assertEquals(data.getPorcis(), "19992000");
+		assertEquals("19992000", data.getPorcis());
 		
 		//System.out.println(data.hashString());
 		String h = data.hashString();
@@ -79,11 +94,11 @@ public class TestReadDbf {
 	public void testWriteCisdod3() {
 		List<Cisdod3> outlist = Utils.loadCisdod3List(dbfFileCisdod3, 0, 0);
 		// System.out.println(outlist.toString());
-		assertTrue(outlist != null);
+		assertNotNull(outlist);
 		
 		String out = Utils.storeCisdod3ToDbf(outlist, dbfFileCisdod3a);
 		// System.out.println(out);
-		assertTrue(out != null);
+		assertNotNull(out);
 		
 		File fileSource = new File(dbfFileCisdod3);
 		File fileTarget = new File(dbfFileCisdod3a);
