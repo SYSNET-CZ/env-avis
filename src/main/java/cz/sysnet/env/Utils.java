@@ -35,6 +35,7 @@ import cz.sysnet.env.model.Sup;
 public class Utils {
 	public static final String DEFAULT_CHARSET_NAME_DBF = "Cp1250";
 	public static final String DEFAULT_CHARSET_NAME_OTPUT = "utf-8";
+	private static final String ERR_MSG_NULLDATA = "Vstupní data jsou null";
 	
 	private static final Logger LOG = LogManager.getLogger(Utils.class);
 	
@@ -47,7 +48,6 @@ public class Utils {
 	}
 	
 	public static boolean logChecker() {
-		//PropertyConfigurator.configure("log4j.properties");
 		LOG.trace("start");
 		LOG.debug("debug message");
 		LOG.info("info message");
@@ -132,12 +132,12 @@ public class Utils {
 	}
 	
 	public static int dbfGetRecordCount(String dbfFilename) {
-		FileInputStream is = null;
+		FileInputStream stream = null;
 		DBFReader reader = null;
 		int out = 0;
 		try {
-			is = new FileInputStream(dbfFilename);
-			reader = new DBFReader(is, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			stream = new FileInputStream(dbfFilename);
+			reader = new DBFReader(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			out = reader.getRecordCount();
 			LOG.info("dbfGetRecordCount: dbf {}, recnum={}", dbfFilename, out);
 			
@@ -146,25 +146,35 @@ public class Utils {
 			out = 0;
 			
 		} finally {
-			try {
-				DBFUtils.close(reader);
-				is.close();					
-			} catch (Exception e) {
-				LOG.error("getRecordCount (finally): {}", e.getMessage(), e);
-				e.printStackTrace();
-			}			
+			DBFUtils.close(reader);
+			DBFUtils.close(stream);
 		}
 		return out;
+	}
+	
+	
+	private static Sup loadSupFromRowobject(Object[] rowObjects) {
+		Sup out = new Sup();
+		for (int i = 0; i < rowObjects.length; i++) {
+			Object data = rowObjects[i];
+			String dataStr = "";
+			if (data != null) dataStr = data.toString();
+			if(i==0) out.setSup(dataStr);
+			else if(i==1) out.setIco(dataStr);
+		}
+		return out;	
 	}
 	
 	public static List<Sup> loadSupList(String dbfFilename, int fromItem, int itemCount) {
 		List<Sup> out = null;
 		DBFReader reader = null;
+		FileInputStream stream = null;
 		
 		try {
-			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			stream = new FileInputStream(dbfFilename);
+			reader = new DBFReader(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			int numberOfFields = reader.getFieldCount();
-			Boolean ok = false;
+			boolean ok = false;
 			List<String> fields = new ArrayList<String>();
 			for (int i = 0; i < numberOfFields; i++) {
 				DBFField field = reader.getField(i);
@@ -180,28 +190,38 @@ public class Utils {
 			Object[] rowObjects;
 			int j = 0;
 			while (((rowObjects = reader.nextRecord()) != null) && ((j < itemCount) || (itemCount <= 0))) {
-				Sup row = new Sup();
-				for (int i = 0; i < rowObjects.length; i++) {
-					Object data = rowObjects[i];
-					String dataStr = "";
-					if (data != null) dataStr = data.toString();
-					if(i==0) row.setSup(dataStr);
-					else if(i==1) row.setIco(dataStr);
-				}
-				out.add(row);
+				out.add(loadSupFromRowobject(rowObjects));
 				j++;
 			}
-			LOG.info("loadSupList: {} done", dbfFilename + ", " + Integer.toString(fromItem) + ", " + Integer.toString(itemCount));
+			String value = dbfFilename + ", " + Integer.toString(fromItem) + ", " + Integer.toString(itemCount);
+			LOG.info("loadSupList: {} done", value);
 		} catch (Exception e) {
 			LOG.error("loadSupList: {}", e.getMessage(), e);
 			out = null;
 			
 		} finally {
 			DBFUtils.close(reader);
+			DBFUtils.close(stream);
 		}
 		return out;
 	}
 
+	private static Cisdod loadCisdodFromRowobject(Object[] rowObjects) {
+		Cisdod out = new Cisdod();
+		for (int i = 0; i < rowObjects.length; i++) {
+			Object data = rowObjects[i];
+			String dataStr = "";
+			if (data != null) dataStr = data.toString();
+			if(i==0) out.setDodavatel(dataStr);
+			else if(i==1) out.setSmlouva(dataStr);
+			else if(i==2) out.setCispart(dataStr);
+			else if(i==3) out.setVariab(dataStr);
+			else if(i==4) out.setSpecif(dataStr);
+			else if(i==5) out.setIco(dataStr);
+			else if(i==6) out.setDny(Long.parseLong(dataStr));					
+		}
+		return out;
+	}
 		
 	public static List<Cisdod> loadCisdodList(String dbfFilename, int fromItem, int itemCount) {
 		List<Cisdod> out = null;
@@ -210,7 +230,7 @@ public class Utils {
 		try {
 			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			int numberOfFields = reader.getFieldCount();
-			Boolean ok = false;
+			boolean ok = false;
 			List<String> fields = new ArrayList<String>();
 			for (int i = 0; i < numberOfFields; i++) {
 				DBFField field = reader.getField(i);
@@ -226,20 +246,7 @@ public class Utils {
 			Object[] rowObjects;
 			int j = 0;
 			while (((rowObjects = reader.nextRecord()) != null) && ((j < itemCount) || (itemCount <= 0))) {
-				Cisdod row = new Cisdod();
-				for (int i = 0; i < rowObjects.length; i++) {
-					Object data = rowObjects[i];
-					String dataStr = "";
-					if (data != null) dataStr = data.toString();
-					if(i==0) row.setDodavatel(dataStr);
-					else if(i==1) row.setSmlouva(dataStr);
-					else if(i==2) row.setCispart(dataStr);
-					else if(i==3) row.setVariab(dataStr);
-					else if(i==4) row.setSpecif(dataStr);
-					else if(i==5) row.setIco(dataStr);
-					else if(i==6) row.setDny(Long.parseLong(dataStr));					
-				}
-				out.add(row);
+				out.add(loadCisdodFromRowobject(rowObjects));
 				j++;
 			}
 		} catch (Exception e) {
@@ -251,6 +258,25 @@ public class Utils {
 		}
 		return out;
 	}
+	
+	private static Cisdod3 loadCisdod3FromRowobject(Object[] rowObjects) {
+		Cisdod3 out = new Cisdod3();
+		for (int i = 0; i < rowObjects.length; i++) {
+			Object data = rowObjects[i];
+			String dataStr = "";
+			if (data != null) dataStr = data.toString();
+			if(i==0) out.setKodproj(dataStr);
+			else if(i==1) out.setDodavatel(dataStr);
+			else if(i==2) out.setSmlouva(dataStr);
+			else if(i==3) out.setVariab(dataStr);
+			else if(i==4) out.setSpecif(dataStr);
+			else if(i==5) out.setIco(dataStr);
+			else if(i==6) out.setDny(Long.parseLong(dataStr));
+			else if(i==7) out.setDruhfa(dataStr);
+			else if(i==8) out.setProcentaza(Double.parseDouble(dataStr));
+		}
+		return out;
+	}
 
 	public static List<Cisdod3> loadCisdod3List(String dbfFilename, int fromItem, int itemCount) {
 		List<Cisdod3> out = null;
@@ -259,7 +285,7 @@ public class Utils {
 		try {
 			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			int numberOfFields = reader.getFieldCount();
-			Boolean ok = false;
+			boolean ok = false;
 			List<String> fields = new ArrayList<String>();
 			for (int i = 0; i < numberOfFields; i++) {
 				DBFField field = reader.getField(i);
@@ -275,22 +301,7 @@ public class Utils {
 			Object[] rowObjects;
 			int j = 0;
 			while (((rowObjects = reader.nextRecord()) != null) && ((j < itemCount) || (itemCount <= 0))) {
-				Cisdod3 row = new Cisdod3();
-				for (int i = 0; i < rowObjects.length; i++) {
-					Object data = rowObjects[i];
-					String dataStr = "";
-					if (data != null) dataStr = data.toString();
-					if(i==0) row.setKodproj(dataStr);
-					else if(i==1) row.setDodavatel(dataStr);
-					else if(i==2) row.setSmlouva(dataStr);
-					else if(i==3) row.setVariab(dataStr);
-					else if(i==4) row.setSpecif(dataStr);
-					else if(i==5) row.setIco(dataStr);
-					else if(i==6) row.setDny(Long.parseLong(dataStr));
-					else if(i==7) row.setDruhfa(dataStr);
-					else if(i==8) row.setProcentaza(Double.parseDouble(dataStr));
-				}
-				out.add(row);
+				out.add(loadCisdod3FromRowobject(rowObjects));
 				j++;
 			}
 		} catch (Exception e) {
@@ -308,11 +319,18 @@ public class Utils {
 		int j = 0;
 		int rcnt = 0;
 		int fcnt = 0;
+		DBFReader reader = null;
+		FileInputStream stream = null;
+		boolean out = false;
+		
+		
 		try {
-			DBFReader reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			stream = new FileInputStream(dbfFilename);
+			reader = new DBFReader(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			fcnt = reader.getFieldCount();
-			rcnt = reader.getRecordCount();			
-			LOG.info("checkFaktura: {}", dbfFilename + ", rows=" + Integer.toString(rcnt));
+			rcnt = reader.getRecordCount();		
+			String value = dbfFilename + ", rows=" + Integer.toString(rcnt);
+			LOG.info("checkFaktura: {}", value);
 			
 			DBFRow dbfRow = null;
 			while (((dbfRow = reader.nextRow()) != null)) {
@@ -350,31 +368,35 @@ public class Utils {
 				fa.setCastkazaca(dbfRow.getDouble(i)); i++;	// 28
 				fa.setUhrazenaza(dbfRow.getDate(i)); i++;	// 29
 				fa.setCastkabdph(dbfRow.getDouble(i)); i++;	// 30		
-				//System.out.println(Integer.toString(j) + "/" + Integer.toString(rcnt));
 
 			}					
 			LOG.info("checkFaktura: {} OK", dbfFilename);
-			return true;
-			
+			out = true;			
 		} catch (Exception e) {
 			String msg = "ROW: " + Integer.toString(j) + "/" + Integer.toString(rcnt);
 			msg += ", COL: " + Integer.toString(i) + "/" + Integer.toString(fcnt);
 			msg += ": " + e.getMessage();
-			LOG.error("checkFaktura: {}", msg, e);			
-			return false;
+			LOG.error("checkFaktura: {}", msg, e);
+			out = false;
+		} finally {
+			DBFUtils.close(reader);
+			DBFUtils.close(stream);
 		}
+		return out;
 	}
 	
 	public static List<Faktura> loadFakturaList(String dbfFilename, int fromItem, int itemCount) {
 		List<Faktura> out = null;
 		DBFReader reader = null;
+		FileInputStream stream = null; 
 		int m = 0;
 		int n = 0;
 		int rcnt = 0;
 		int fcnt = 0;
 		
 		try {
-			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			stream = new FileInputStream(dbfFilename);
+			reader = new DBFReader(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			int numberOfFields = reader.getFieldCount();
 			List<String> fields = new ArrayList<String>();
 			for (int i = 0; i < numberOfFields; i++) {
@@ -438,28 +460,28 @@ public class Utils {
 			
 		} finally {
 			DBFUtils.close(reader);
+			DBFUtils.close(stream);			
 		}
 		return out;
 	}
 	
 	public static String storeSupToDbf(List<Sup> objectList, String dbfFilename) {
 		DBFWriter writer = null;
+		FileOutputStream stream = null;
 		String outFilename = null;
 		try {
-			if (objectList == null) throw new EnvException("Vstupní data jsou null");
+			if (objectList == null) throw new EnvException(ERR_MSG_NULLDATA);
 			if (dbfFilename == null) dbfFilename = Sup.FILE_NAME;
 			File outFile = new File(dbfFilename);
 			outFilename = outFile.getAbsolutePath();
+			stream = new FileOutputStream(outFilename);
+			writer = new DBFWriter(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			
-			writer = new DBFWriter(new FileOutputStream(outFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
-			DBFField[] fields = new DBFField[2];
-			
+			DBFField[] fields = new DBFField[2];			
 			fields[0] = Utils.createDbField("SUP", DBFDataType.CHARACTER, 20, null);
-			fields[1] = Utils.createDbField("ICO", DBFDataType.CHARACTER, 11, null);
-						
-			writer.setFields(fields);
-			
-			Object rowData[] = null;			
+			fields[1] = Utils.createDbField("ICO", DBFDataType.CHARACTER, 11, null);					
+			writer.setFields(fields);		
+			Object[] rowData = null;			
 			for (Sup item:objectList) {
 				rowData = new Object[2];
 				rowData[0] = item.getSup();
@@ -472,6 +494,7 @@ public class Utils {
 			
 		} finally {
 			DBFUtils.close(writer);
+			DBFUtils.close(stream);			
 		}
 		return outFilename;		
 	}
@@ -479,14 +502,16 @@ public class Utils {
 	
 	public static String storeCisdodToDbf(List<Cisdod> objectList, String dbfFilename) {
 		DBFWriter writer = null;
+		FileOutputStream stream = null;
 		String outFilename = null;
 		try {
-			if (objectList == null) throw new EnvException("Vstupní data jsou null");
+			if (objectList == null) throw new EnvException(ERR_MSG_NULLDATA);
 			if (dbfFilename == null) dbfFilename = Cisdod.FILE_NAME;
 			File outFile = new File(dbfFilename);
 			outFilename = outFile.getAbsolutePath();
 			
-			writer = new DBFWriter(new FileOutputStream(outFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			stream = new FileOutputStream(outFilename);
+			writer = new DBFWriter(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			DBFField[] fields = new DBFField[7];
 			
 			fields[0] = Utils.createDbField("DODAVATEL", DBFDataType.CHARACTER, 20, null);
@@ -499,7 +524,7 @@ public class Utils {
 									
 			writer.setFields(fields);
 			
-			Object rowData[] = null;			
+			Object[] rowData = null;			
 			for (Cisdod item:objectList) {
 				rowData = new Object[7];
 				rowData[0] = item.getDodavatel();
@@ -517,6 +542,7 @@ public class Utils {
 			
 		} finally {
 			DBFUtils.close(writer);
+			DBFUtils.close(stream);			
 		}
 		return outFilename;		
 	}
@@ -524,14 +550,16 @@ public class Utils {
 	
 	public static String storeCisdod3ToDbf(List<Cisdod3> objectList, String dbfFilename) {
 		DBFWriter writer = null;
+		FileOutputStream stream = null;
+		
 		String outFilename = null;
 		try {
-			if (objectList == null) throw new EnvException("Vstupní data jsou null");
+			if (objectList == null) throw new EnvException(ERR_MSG_NULLDATA);
 			if (dbfFilename == null) dbfFilename = Cisdod3.FILE_NAME;
 			File outFile = new File(dbfFilename);
 			outFilename = outFile.getAbsolutePath();
-			
-			writer = new DBFWriter(new FileOutputStream(outFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			stream = new FileOutputStream(outFilename);
+			writer = new DBFWriter(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			DBFField[] fields = new DBFField[9];
 			
 			fields[0] = Utils.createDbField("KODPROJ", DBFDataType.CHARACTER, 21, null);
@@ -547,7 +575,7 @@ public class Utils {
 									
 			writer.setFields(fields);
 			
-			Object rowData[] = null;			
+			Object[] rowData = null;			
 			for (Cisdod3 item:objectList) {
 				rowData = new Object[9];
 				rowData[0] = item.getKodproj();
@@ -568,6 +596,7 @@ public class Utils {
 			
 		} finally {
 			DBFUtils.close(writer);
+			DBFUtils.close(stream);			
 		}
 		return outFilename;		
 	}
@@ -614,15 +643,16 @@ public class Utils {
 	
 	public static String hash(String value, String algorithm) {
 		//MD5, SHA-1, SHA-256
+		StringBuilder stringBuilder = null;
 		if (algorithm == null) algorithm = "MD5";
 		try {
 			MessageDigest md = MessageDigest.getInstance(algorithm);
 			byte[] array = md.digest(value.getBytes());
-			StringBuffer sb = new StringBuffer();
+			stringBuilder = new StringBuilder();
 			for (int i = 0; i < array.length; ++i) {
-				sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+				stringBuilder.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
 			}
-			return sb.toString();
+			return stringBuilder.toString();
 		} catch (NoSuchAlgorithmException e) {			
 			LOG.error("hash: {}", e.getMessage(), e);
 		}
@@ -650,10 +680,12 @@ public class Utils {
         }
 
         if (!algos.isEmpty()) {
-            System.out.printf(" --- Provider %s, version %.2f --- %n", prov.getName(), prov.getVersion());
+        	String msg = String.format(" --- Provider %s, version %.2f --- %n", prov.getName(), prov.getVersion());
+        	LOG.info(msg);
             for (Service service : algos) {
                 String algo = service.getAlgorithm();
-                System.out.printf("Algorithm name: \"%s\"%n", algo);
+                msg = String.format("Algorithm name: \"%s\"%n", algo);
+                LOG.info(msg);
             }
         }
 
@@ -663,9 +695,8 @@ public class Utils {
             final String prefix = "Alg.Alias." + type + ".";
             if (key.toString().startsWith(prefix)) {
                 String value = prov.get(key.toString()).toString();
-                System.out.printf("Alias: \"%s\" -> \"%s\"%n",
-                        key.toString().substring(prefix.length()),
-                        value);
+                String msg = String.format("Alias: \"%s\" -> \"%s\"%n", key.toString().substring(prefix.length()), value);
+                LOG.info(msg);
             }
         }
     }
