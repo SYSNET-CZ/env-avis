@@ -18,8 +18,8 @@ import cz.sysnet.env.Utils;
 public class Cisdod implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	public static String FILE_NAME = "CISDOD.DBF";
-	public static List<String> DBF_FIELD_LIST = 
+	public static final String FILE_NAME = "CISDOD.DBF";
+	private static final List<String> DBF_FIELD_LIST = 
 			new ArrayList<String>(Arrays.asList(
 					"DODAVATEL", "SMLOUVA", "CISPART", "VARIAB", "SPECIF", "ICO", "DNY"
 					));
@@ -33,6 +33,10 @@ public class Cisdod implements Serializable {
 	String ico;				// IČO
 	long dny;				// Počet dní
 	
+	
+	public static List<String> getDbfFieldList() {
+		return DBF_FIELD_LIST;
+	}
 	
 	public String getDodavatel() {
 		return dodavatel;
@@ -80,8 +84,7 @@ public class Cisdod implements Serializable {
 	@Override
 	public String toString() {
 		Gson gson = new Gson();
-		String json = gson.toJson(this);
-		return json;		
+		return gson.toJson(this);		
 	}
 
 	public String hashString() {

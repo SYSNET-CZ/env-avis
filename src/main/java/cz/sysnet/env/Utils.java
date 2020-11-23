@@ -180,7 +180,7 @@ public class Utils {
 				DBFField field = reader.getField(i);
 				fields.add(field.getName());				
 			}
-			if (fields.equals(Sup.DBF_FIELD_LIST)) ok = true;
+			if (fields.equals(Sup.getDbfFieldList())) ok = true;
 			if (!ok) {
 				DBFUtils.close(reader);
 				throw new EnvException("Datová struktura neodpovídá objektu 'Sup'");
@@ -236,7 +236,7 @@ public class Utils {
 				DBFField field = reader.getField(i);
 				fields.add(field.getName());				
 			}
-			if (fields.equals(Cisdod.DBF_FIELD_LIST)) ok = true;
+			if (fields.equals(Cisdod.getDbfFieldList())) ok = true;
 			if (!ok) {
 				DBFUtils.close(reader);
 				throw new EnvException("Datová struktura neodpovídá objektu 'Cisdod'");
@@ -291,7 +291,7 @@ public class Utils {
 				DBFField field = reader.getField(i);
 				fields.add(field.getName());				
 			}
-			if (fields.equals(Cisdod3.DBF_FIELD_LIST)) ok = true;
+			if (fields.equals(Cisdod3.getDbfFieldList())) ok = true;
 			if (!ok) {
 				DBFUtils.close(reader);
 				throw new EnvException("Datová struktura neodpovídá objektu 'Cisdod3'");
@@ -403,7 +403,7 @@ public class Utils {
 				DBFField field = reader.getField(i);
 				fields.add(field.getName());				
 			}
-			if (!fields.equals(Faktura.DBF_FIELD_LIST)) { 
+			if (!fields.equals(Faktura.getDbfFieldList())) { 
 				DBFUtils.close(reader);
 				throw new EnvException("Datová struktura neodpovídá objektu 'Faktura'");
 			}

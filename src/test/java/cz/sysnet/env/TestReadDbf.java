@@ -1,3 +1,4 @@
+package cz.sysnet.env;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -5,7 +6,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import cz.sysnet.env.Utils;
 import cz.sysnet.env.model.Cisdod;
 import cz.sysnet.env.model.Cisdod3;
 import cz.sysnet.env.model.Faktura;
@@ -16,11 +16,8 @@ public class TestReadDbf {
 	String dbfFileCisdod = "src/test/resources/CISDOD.DBF";
 	String dbfFileCisdod3 = "src/test/resources/CISDOD3.dbf";
 	String dbfFileFaktura = "src/test/resources/FAKTLN.DBF";
-	//String dbfFileFaktura = "e:\\temp\\FAKTLN\\FAKTLN.DBF";
-	
 	
 	String dbfFileCisdod3a = "src/test/resources/CISDOD3a.DBF";
-	
 	
 	@Test
 	public void testLogger() {
@@ -43,8 +40,8 @@ public class TestReadDbf {
 		// System.out.println(data.toString());
 		assertEquals("27624218", data.getIco());
 		
-		// System.out.println(data.hashString());
-		assertTrue(data.checkHashString("7a097fbb8b94fe984f05115283020b9f"));				
+		System.out.println(data.hashString());
+		assertTrue(data.checkHashString("b16883dd9ae65c7416b9734b4d71d3a2"));				
 	}
 	
 	@Test

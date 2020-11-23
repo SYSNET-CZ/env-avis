@@ -17,17 +17,20 @@ import cz.sysnet.env.Utils;
 public class Sup implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	public static String FILE_NAME = "SUP.DBF";
-	public static List<String> DBF_FIELD_LIST = new ArrayList<String>(Arrays.asList("SUP", "ICO"));
+	public static final String FILE_NAME = "SUP.DBF";
+	private static final List<String> DBF_FIELD_LIST = new ArrayList<String>(Arrays.asList("SUP", "ICO"));
 	
-	String sup;		// Název supervizora
+	String name;		// Název supervizora
 	String ico;
 	
+	public static List<String> getDbfFieldList() {
+		return DBF_FIELD_LIST;
+	}
 	public String getSup() {
-		return sup;
+		return name;
 	}
 	public void setSup(String sup) {
-		this.sup = sup;
+		this.name = sup;
 	}
 	public String getIco() {
 		return ico;
@@ -39,8 +42,7 @@ public class Sup implements Serializable {
 	@Override
 	public String toString() {
 		Gson gson = new Gson();
-		String json = gson.toJson(this);
-		return json;		
+		return gson.toJson(this);		
 	}
 	
 	public String hashString() {

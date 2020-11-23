@@ -13,8 +13,8 @@ import cz.sysnet.env.Utils;
 public class Faktura implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public static String FILE_NAME = "FaktLN.dbf";
-	public static List<String> DBF_FIELD_LIST = 
+	public static final String FILE_NAME = "FaktLN.dbf";
+	private static final List<String> DBF_FIELD_LIST = 
 			new ArrayList<String>(Arrays.asList(
 					"PORCIS", "DODAVATEL", "ICOD", "SMLOUVA", "CISPART", "CISFA", "CASTKA", 
 					"UHRADA", "CUCTU", "BANKA", "VYSTAVENA", "DOSLA", "LIKVIDACE", "VRACKPROP", 
@@ -55,7 +55,9 @@ public class Faktura implements Serializable {
 	Date uhrazenaza;    //Datum uhrazení zádržného
 	double castkabdph;  //Částka bez DPH (v Kč)
 	
-	
+	public static List<String> getDbfFieldList() {
+		return DBF_FIELD_LIST;
+	}
 	public String getPorcis() {
 		return porcis;
 	}
@@ -246,8 +248,7 @@ public class Faktura implements Serializable {
 	@Override
 	public String toString() {
 		Gson gson = new Gson();
-		String json = gson.toJson(this);
-		return json;		
+		return gson.toJson(this);		
 	}
 	
 	public String hashString() {

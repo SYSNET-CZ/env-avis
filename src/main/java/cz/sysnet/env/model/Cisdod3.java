@@ -18,8 +18,8 @@ import cz.sysnet.env.Utils;
 public class Cisdod3 implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	public static String FILE_NAME = "CISDOD3.DBF"; 
-	public static List<String> DBF_FIELD_LIST = 
+	public static final String FILE_NAME = "CISDOD3.DBF"; 
+	private static final List<String> DBF_FIELD_LIST = 
 			new ArrayList<String>(Arrays.asList(
 					"KODPROJ", "DODAVATEL", "SMLOUVA", "VARIAB", "SPECIF", "ICO", "DNY" , "DRUHFA", "PROCENTAZA"
 					));
@@ -33,6 +33,10 @@ public class Cisdod3 implements Serializable {
 	long dny;
 	String druhfa;
 	double procentaza;
+	
+	public static List<String> getDbfFieldList() {
+		return DBF_FIELD_LIST;
+	}
 	public String getKodproj() {
 		return kodproj;
 	}

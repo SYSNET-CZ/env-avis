@@ -5,7 +5,7 @@ __env-avis__ je knihovna Java pro čtení a ukládání dat do DBF pro výměnu 
 
 # Licence
 
-__env-anis__ je AGPL.
+__env-avis__ je AGPL.
 
 # Úvod
 
