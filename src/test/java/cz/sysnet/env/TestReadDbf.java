@@ -27,14 +27,14 @@ public class TestReadDbf {
 	
 	@Test
 	public void testDbfCheck() {
-		boolean out = Utils.checkFaktura(dbfFileFaktura);
+		boolean out = Utils.checkFakturaDbf(dbfFileFaktura);
 		assertTrue(out);
 	}
 
 	
 	@Test
 	public void testReadSup() {
-		List<Sup> dataList = Utils.loadSupList(dbfFileSup, 0, 10);
+		List<Sup> dataList = Utils.loadSupListFromDbf(dbfFileSup, 0, 10);
 		assertNotNull(dataList);		
 		Sup data = dataList.get(0);
 		// System.out.println(data.toString());
@@ -46,7 +46,7 @@ public class TestReadDbf {
 	
 	@Test
 	public void testReadCisdod() {
-		List<Cisdod> dataList = Utils.loadCisdodList(dbfFileCisdod, 0, 10);
+		List<Cisdod> dataList = Utils.loadCisdodListFromDbf(dbfFileCisdod, 0, 10);
 		assertNotNull(dataList);		
 		Cisdod data = dataList.get(0);
 		// System.out.println(data.toString());
@@ -61,7 +61,7 @@ public class TestReadDbf {
 	
 	@Test
 	public void testReadCisdod3() {
-		List<Cisdod3> dataList = Utils.loadCisdod3List(dbfFileCisdod3, 0, 10);
+		List<Cisdod3> dataList = Utils.loadCisdod3ListFromDbf(dbfFileCisdod3, 0, 10);
 		assertNotNull(dataList);		
 		Cisdod3 data = dataList.get(0);
 		//System.out.println(data.toString());
@@ -74,7 +74,7 @@ public class TestReadDbf {
 
 	@Test
 	public void testReadFaktura() {
-		List<Faktura> dataList = Utils.loadFakturaList(dbfFileFaktura, 0, 10);
+		List<Faktura> dataList = Utils.loadFakturaListFromDbf(dbfFileFaktura, 0, 10);
 		assertNotNull(dataList);		
 		Faktura data = dataList.get(0);
 		//System.out.println(data.toString());
@@ -89,7 +89,7 @@ public class TestReadDbf {
 	
 	@Test
 	public void testWriteCisdod3() {
-		List<Cisdod3> outlist = Utils.loadCisdod3List(dbfFileCisdod3, 0, 0);
+		List<Cisdod3> outlist = Utils.loadCisdod3ListFromDbf(dbfFileCisdod3, 0, 0);
 		// System.out.println(outlist.toString());
 		assertNotNull(outlist);
 		

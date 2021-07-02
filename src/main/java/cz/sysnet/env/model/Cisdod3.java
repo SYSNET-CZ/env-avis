@@ -1,13 +1,10 @@
 package cz.sysnet.env.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.gson.Gson;
-
-import cz.sysnet.env.Utils;
+import com.opencsv.bean.CsvBindByName;
 
 /**
  * CISDOD3.DBF – realizační smlouvy
@@ -15,7 +12,7 @@ import cz.sysnet.env.Utils;
  * @author rjaeg
  *
  */
-public class Cisdod3 implements Serializable {
+public class Cisdod3  extends BaseEnvClass {
 	private static final long serialVersionUID = 1L;
 	
 	public static final String FILE_NAME = "CISDOD3.DBF"; 
@@ -24,15 +21,32 @@ public class Cisdod3 implements Serializable {
 					"KODPROJ", "DODAVATEL", "SMLOUVA", "VARIAB", "SPECIF", "ICO", "DNY" , "DRUHFA", "PROCENTAZA"
 					));
 	
-	String kodproj;
-	String dodavatel;
-	String smlouva;
-	String variab;
-	String specif;
-	String ico;
-	long dny;
-	String druhfa;
-	double procentaza;
+	@CsvBindByName(column = "KODPROJ")
+	private String kodproj;
+	
+	@CsvBindByName(column = "DODAVATEL")
+	private String dodavatel;
+	
+	@CsvBindByName(column = "SMLOUVA")
+	private String smlouva;
+	
+	@CsvBindByName(column = "VARIAB")
+	private String variab;
+	
+	@CsvBindByName(column = "SPECIF")
+	private String specif;
+	
+	@CsvBindByName(column = "ICO")
+	private String ico;
+	
+	@CsvBindByName(column = "DNY")
+	private long dny;
+	
+	@CsvBindByName(column = "DRUHFA")
+	private String druhfa;
+	
+	@CsvBindByName(column = "PROCENTAZA")
+	private double procentaza;
 	
 	public static List<String> getDbfFieldList() {
 		return DBF_FIELD_LIST;
@@ -90,28 +104,5 @@ public class Cisdod3 implements Serializable {
 	}
 	public void setProcentaza(double procentaza) {
 		this.procentaza = procentaza;
-	}  
-	
-	@Override
-	public String toString() {
-		Gson gson = new Gson();
-		String json = gson.toJson(this);
-		return json;		
-	}
-	
-	public String hashString() {
-		return this.hashString(null);
-	}
-	
-	public String hashString(String algoritm) {
-		return Utils.hash(this.toString(), algoritm);		
-	}
-	
-	public boolean checkHashString(String hash) {
-		return this.checkHashString(hash, null);
-	}
-	
-	public boolean checkHashString(String hash, String algoritm) {
-		return hash.equals(this.hashString(algoritm)); 		
-	}
+	}  	
 }

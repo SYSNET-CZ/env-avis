@@ -1,13 +1,10 @@
 package cz.sysnet.env.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.gson.Gson;
-
-import cz.sysnet.env.Utils;
+import com.opencsv.bean.CsvBindByName;
 
 /**
  * CISDOD.DBF – ekologické smlouvy
@@ -15,7 +12,7 @@ import cz.sysnet.env.Utils;
  * @author rjaeg
  *
  */
-public class Cisdod implements Serializable {
+public class Cisdod extends BaseEnvClass {
 	private static final long serialVersionUID = 1L;
 	
 	public static final String FILE_NAME = "CISDOD.DBF";
@@ -24,13 +21,19 @@ public class Cisdod implements Serializable {
 					"DODAVATEL", "SMLOUVA", "CISPART", "VARIAB", "SPECIF", "ICO", "DNY"
 					));
 	
-	
+	@CsvBindByName(column = "DODAVATEL")
 	String dodavatel;		// Název dodavatele
+	@CsvBindByName(column = "SMLOUVA")
 	String smlouva;			// Číslo smlouvy
+	@CsvBindByName(column = "CISPART")
 	String cispart;			// Pořadí partnera
+	@CsvBindByName(column = "VARIAB")
 	String variab;			// Variabilní symbol
+	@CsvBindByName(column = "SPECIF")
 	String specif;			// Specifický symbol
+	@CsvBindByName(column = "ICO")
 	String ico;				// IČO
+	@CsvBindByName(column = "DNY")
 	long dny;				// Počet dní
 	
 	
@@ -79,27 +82,5 @@ public class Cisdod implements Serializable {
 	}
 	public void setDny(long dny) {
 		this.dny = dny;
-	}
-	
-	@Override
-	public String toString() {
-		Gson gson = new Gson();
-		return gson.toJson(this);		
-	}
-
-	public String hashString() {
-		return this.hashString(null);
-	}
-	
-	public String hashString(String algoritm) {
-		return Utils.hash(this.toString(), algoritm);		
-	}
-	
-	public boolean checkHashString(String hash) {
-		return this.checkHashString(hash, null);
-	}
-	
-	public boolean checkHashString(String hash, String algoritm) {
-		return hash.equals(this.hashString(algoritm)); 		
-	}
+	}	
 }

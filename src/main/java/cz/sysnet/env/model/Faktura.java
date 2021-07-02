@@ -1,16 +1,14 @@
 package cz.sysnet.env.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import com.google.gson.Gson;
+import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvDate;
 
-import cz.sysnet.env.Utils;
-
-public class Faktura implements Serializable {
+public class Faktura  extends BaseEnvClass {
 	private static final long serialVersionUID = 1L;
 
 	public static final String FILE_NAME = "FaktLN.dbf";
@@ -23,36 +21,77 @@ public class Faktura implements Serializable {
 					"UHRAZENAZA", "CASTKABDPH"
 					));
 	
+	@CsvBindByName(column = "PORCIS")
 	String porcis;     	//Pořadové číslo faktury v AVISme
+	@CsvBindByName(column = "DODAVATEL")
 	String dodavatel;   //Název dodavatele
+	@CsvBindByName(column = "ICOD")
 	String icod;     	//IČO dodavatele
+	@CsvBindByName(column = "SMLOUVA")
 	String smlouva;     //Číslo ekologické smlouvy
+	@CsvBindByName(column = "CISPART")
 	String cispart;     //Pořadí partnera
+	@CsvBindByName(column = "CISFA")
 	String cisfa;     	//Číslo faktury dodavatele
+	@CsvBindByName(column = "CASTKA")
 	double castka;     	//Částka (v Kč)
+	@CsvBindByName(column = "UHRADA")
 	String uhrada;     	//Forma úhrady (PU – příkaz k úhradě, DB – dobropis)
+	@CsvBindByName(column = "CUCTU")
 	String cuctu;     	//Číslo bankovního účtu dodavatele
+	@CsvBindByName(column = "BANKA")
 	String banka;    	//Kód banky dodavatele
+	@CsvBindByName(column = "VYSTAVENA")
+	@CsvDate("yyyy-MM-dd")
 	Date vystavena;     //Datum vystavení faktury      
+	@CsvBindByName(column = "DOSLA")
+	@CsvDate("yyyy-MM-dd")
 	Date dosla;     	//Datum přijetí faktury      
+	@CsvBindByName(column = "LIKVIDACE")
+	@CsvDate("yyyy-MM-dd")
 	Date likvidace;     //Datum likvidace faktury      
+	@CsvBindByName(column = "VRACKPROP")
+	@CsvDate("yyyy-MM-dd")
 	Date vrackprop;     //Datum vrácení k proplacení         
+	@CsvBindByName(column = "VARIAB")
 	String variab;     	//Variabilní symbol
+	@CsvBindByName(column = "SPECIF")
 	String specif;     	//Specifický symbol
+	@CsvBindByName(column = "DRUHFA")
 	String druhfa;     	//Druh faktury (A – analýza, B – aktualizovaná analýza rizik, K – kon, O – oponentura, S – sanace, V – supervize, X – různé)
+	@CsvBindByName(column = "SPLATNA")
+	@CsvDate("yyyy-MM-dd")
 	Date splatna;     	//Datum splatnosti         
+	@CsvBindByName(column = "UHRAZENA")
+	@CsvDate("yyyy-MM-dd")
 	Date uhrazena;     	//Datum uhrazení         
+	@CsvBindByName(column = "VRACENA")
+	@CsvDate("yyyy-MM-dd")
 	Date vracena;     	//Datum vrácení
+	@CsvBindByName(column = "ZAUCTOVANO")
+	@CsvDate("yyyy-MM-dd")
 	Date zauctovano;    //Datum zaúčtování
+	@CsvBindByName(column = "SUP")
 	String sup;     	//Název supervizora 
+	@CsvBindByName(column = "ICOS")
 	String icos;     	//IČO supervizora
+	@CsvBindByName(column = "PU")
 	String pu;     		//Stav příkazu k úhradě (1= uhrazeno)
+	@CsvBindByName(column = "KODPROJ")
 	String kodproj;     //Kód smlouvy
+	@CsvBindByName(column = "PROCENTAZA")
 	double procentaza;  //Procento zádržného (v %)
+	@CsvBindByName(column = "CASTKAZA")
 	double castkaza;    //Částka zádržného (v Kč)
+	@CsvBindByName(column = "SPLATNAZA")
+	@CsvDate("yyyy-MM-dd")
 	Date splatnaza;     //Datum splatnosti zádržného
+	@CsvBindByName(column = "CASTKAZACA")
 	double castkazaca;  //Částka zádržného (v Kč)
+	@CsvBindByName(column = "UHRAZENAZA")
+	@CsvDate("yyyy-MM-dd")
 	Date uhrazenaza;    //Datum uhrazení zádržného
+	@CsvBindByName(column = "CASTKABDPH")
 	double castkabdph;  //Částka bez DPH (v Kč)
 	
 	public static List<String> getDbfFieldList() {
@@ -243,27 +282,5 @@ public class Faktura implements Serializable {
 	}
 	public void setCastkabdph(double castkabdph) {
 		this.castkabdph = castkabdph;
-	}
-
-	@Override
-	public String toString() {
-		Gson gson = new Gson();
-		return gson.toJson(this);		
-	}
-	
-	public String hashString() {
-		return this.hashString(null);
-	}
-	
-	public String hashString(String algoritm) {
-		return Utils.hash(this.toString(), algoritm);		
-	}
-	
-	public boolean checkHashString(String hash) {
-		return this.checkHashString(hash, null);
-	}
-	
-	public boolean checkHashString(String hash, String algoritm) {
-		return hash.equals(this.hashString(algoritm)); 		
 	}
 }

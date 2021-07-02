@@ -12,7 +12,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Provider.Service;
 import java.security.Security;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +29,7 @@ import com.linuxense.javadbf.DBFReader;
 import com.linuxense.javadbf.DBFRow;
 import com.linuxense.javadbf.DBFUtils;
 import com.linuxense.javadbf.DBFWriter;
+import com.opencsv.CSVWriter;
 
 import cz.sysnet.env.model.Cisdod;
 import cz.sysnet.env.model.Cisdod3;
@@ -38,7 +42,6 @@ public class Utils {
 	private static final String ERR_MSG_NULLDATA = "Vstupní data jsou null";
 	
 	private static final Logger LOG = LogManager.getLogger(Utils.class);
-	
 	
 	private static int dotCounter = 0;
 	
@@ -58,8 +61,6 @@ public class Utils {
 		return true;
 			
 	}
-	
-	
 	
 	public static String dbfToCsv(String dbfFileName) {
 		return dbfToCsv(dbfFileName, null, null, null);
@@ -131,6 +132,84 @@ public class Utils {
 		return out;	
 	}
 	
+	public static String dbfToCsv2(String dbfFileName) {
+		return dbfToCsv2(dbfFileName, null, null, null);
+	}
+	
+	public static String dbfToCsv2(String dbfFileName, String csvFileName)  {
+		return dbfToCsv2(dbfFileName, csvFileName, null, null);
+	}
+	
+	public static String dbfToCsv2(String dbfFileName, String csvFileName, String inCharsetName, String outCharsetName) {
+		Charset charsetIn = Charset.forName(DEFAULT_CHARSET_NAME_DBF);
+		Charset charsetOut = Charset.forName(DEFAULT_CHARSET_NAME_OTPUT);
+		DBFReader reader = null;
+		CSVWriter writer = null;
+		String out = null;
+		
+		try {
+			if (dbfFileName == null) throw new EnvException("Chybí vstupní DBF");
+			File inFile = new File(dbfFileName);
+			if (!inFile.exists()) throw new EnvException("Vstupní DBF neexistuje");
+			
+			String outFilename = FilenameUtils.removeExtension(inFile.getAbsolutePath()) + ".csv";
+			if (csvFileName == null) csvFileName = outFilename;
+			File outFile = new File(csvFileName);
+			
+			
+			if (inCharsetName != null) charsetIn = Charset.forName(inCharsetName);
+			if (outCharsetName != null) charsetOut = Charset.forName(outCharsetName);
+			
+			reader = new DBFReader(new FileInputStream(dbfFileName), charsetIn);
+			writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream(csvFileName), charsetOut));
+
+			int numberOfFields = reader.getFieldCount();		
+			String [] rowHeaderArray = new String[numberOfFields];
+			for (int i = 0; i < numberOfFields; i++) {
+				DBFField field = reader.getField(i);
+				rowHeaderArray[i] = field.getName();
+			}
+			writer.writeNext(rowHeaderArray);
+			
+			Object[] rowObjects = null;			
+			while ((rowObjects = reader.nextRecord()) != null) {
+				int rowLength = rowObjects.length;
+				String[] rowArray = new String[rowLength];	
+				for (int i = 0; i < rowLength; i++) {
+					Object data = rowObjects[i];
+					String dataStr = "";
+					if (data != null) {
+						String cl = data.getClass().getCanonicalName();
+						if (cl.equalsIgnoreCase("java.util.Date")) {
+							Date dateValue = (Date) data;
+							DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+							dataStr = df.format(dateValue);
+						} else {
+							dataStr = data.toString();
+						}	
+					}
+					rowArray[i] = dataStr; 
+				}
+				writer.writeNext(rowArray);
+				printDot();
+			}
+			writer.flush();
+			out = outFile.getAbsolutePath();
+			LOG.info("dbfToCsv: written file {}", out);
+			
+			
+		} catch (Exception e) {
+			LOG.error("dbfToCsv: {}", e.getMessage(), e);
+			out = null;
+			
+		} finally {
+			DBFUtils.close(reader);
+			DBFUtils.close(writer);
+		}
+		return out;	
+	}
+	
+	
 	public static int dbfGetRecordCount(String dbfFilename) {
 		FileInputStream stream = null;
 		DBFReader reader = null;
@@ -166,6 +245,10 @@ public class Utils {
 	}
 	
 	public static List<Sup> loadSupList(String dbfFilename, int fromItem, int itemCount) {
+		return loadSupListFromDbf(dbfFilename, fromItem, itemCount);
+	}
+	
+	public static List<Sup> loadSupListFromDbf(String dbfFilename, int fromItem, int itemCount) {
 		List<Sup> out = null;
 		DBFReader reader = null;
 		FileInputStream stream = null;
@@ -222,8 +305,12 @@ public class Utils {
 		}
 		return out;
 	}
-		
+	
 	public static List<Cisdod> loadCisdodList(String dbfFilename, int fromItem, int itemCount) {
+		return loadCisdodListFromDbf(dbfFilename, fromItem, itemCount);
+	}
+	
+	public static List<Cisdod> loadCisdodListFromDbf(String dbfFilename, int fromItem, int itemCount) {
 		List<Cisdod> out = null;
 		DBFReader reader = null;
 		
@@ -277,8 +364,29 @@ public class Utils {
 		}
 		return out;
 	}
-
+	
+	public static List<?> loadSupListFromCsv(String csvFilename) {
+		return CsvUtils.readBeanList(csvFilename, Sup.class);
+	}
+	
+	public static List<?> loadCisdodListFromCsv(String csvFilename) {
+		return CsvUtils.readBeanList(csvFilename, Cisdod.class);
+	}
+	
+	public static List<?> loadCisdod3ListFromCsv(String csvFilename) {
+		return CsvUtils.readBeanList(csvFilename, Cisdod3.class);
+	}
+	
+	public static List<?> loadFakturaListFromCsv(String csvFilename) {
+		return CsvUtils.readBeanList(csvFilename, Faktura.class);
+	}
+	
 	public static List<Cisdod3> loadCisdod3List(String dbfFilename, int fromItem, int itemCount) {
+		return loadCisdod3ListFromDbf(dbfFilename, fromItem, itemCount);
+	}
+	
+		
+	public static List<Cisdod3> loadCisdod3ListFromDbf(String dbfFilename, int fromItem, int itemCount) {
 		List<Cisdod3> out = null;
 		DBFReader reader = null;
 		
@@ -314,7 +422,7 @@ public class Utils {
 		return out;
 	}
 	
-	public static boolean checkFaktura(String dbfFilename) {
+	public static boolean checkFakturaDbf(String dbfFilename) {
 		int i = 0;
 		int j = 0;
 		int rcnt = 0;
@@ -386,6 +494,10 @@ public class Utils {
 	}
 	
 	public static List<Faktura> loadFakturaList(String dbfFilename, int fromItem, int itemCount) {
+		return loadFakturaListFromDbf(dbfFilename, fromItem, itemCount);
+	}
+	
+	public static List<Faktura> loadFakturaListFromDbf(String dbfFilename, int fromItem, int itemCount) {
 		List<Faktura> out = null;
 		DBFReader reader = null;
 		FileInputStream stream = null; 
@@ -700,4 +812,68 @@ public class Utils {
             }
         }
     }
+	
+	
+	public static String storeCisdod3BeanToCsv(List<Cisdod3> objectList, String csvFilename) {
+		String out = CsvUtils.writeBeanList(csvFilename, objectList);
+		return out;
+	}
+	
+	public static String storeCisdodBeanToCsv(List<Cisdod> objectList, String csvFilename) {
+		String out = CsvUtils.writeBeanList(csvFilename, objectList);
+		return out;
+	}
+	
+	public static String storeSupBeanToCsv(List<Sup> objectList, String csvFilename) {
+		String out = CsvUtils.writeBeanList(csvFilename, objectList);
+		return out;
+	}
+	
+	public static String storeFakturaBeanToCsv(List<Faktura> objectList, String csvFilename) {
+		String out = CsvUtils.writeBeanList(csvFilename, objectList);
+		return out;
+	}
+	
+	public static String storeCisdod3ToCsv(List<Cisdod3> objectList, String csvFilename) {
+		String dbfFilename = csvFilename.replace(".csv", ".DBF").replace(".CSV", ".DBF");
+		String out = storeCisdod3ToDbf(objectList, dbfFilename);
+		if (out != null) {
+			out = dbfToCsv2(dbfFilename, csvFilename);
+			if (out != null) deleteFile(dbfFilename);
+		}
+		return out;
+	}
+	
+	public static String storeCisdodToCsv(List<Cisdod> objectList, String csvFilename) {
+		String dbfFilename = csvFilename.replace(".csv", ".DBF").replace(".CSV", ".DBF");
+		String out = storeCisdodToDbf(objectList, dbfFilename);
+		if (out != null) {
+			out = dbfToCsv2(dbfFilename, csvFilename);
+			if (out != null) deleteFile(dbfFilename);
+		}
+		return out;
+	}	
+
+	public static String storeSupToCsv(List<Sup> objectList, String csvFilename) {
+		String dbfFilename = csvFilename.replace(".csv", ".DBF").replace(".CSV", ".DBF");
+		String out = storeSupToDbf(objectList, dbfFilename);
+		if (out != null) {
+			out = dbfToCsv2(dbfFilename, csvFilename);
+			if (out != null) deleteFile(dbfFilename);
+		}
+		return out;
+	}	
+	
+	private static boolean deleteFile(String fileName) {
+		boolean out = false;
+		try {
+			File file = new File(fileName);
+			out = file.delete();
+			
+		} catch (Exception e) {
+			out = false;
+		}
+		return out;
+	}
+
 }
