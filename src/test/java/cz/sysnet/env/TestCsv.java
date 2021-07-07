@@ -18,6 +18,7 @@ public class TestCsv {
 	String csvFileFaktura = "src/test/resources/FAKTLN.csv";
 	String csvFileFaktura1 = "src/test/resources/FAKTLN1.csv";
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testBeanCisdod3() {
 		List<?> out = CsvUtils.readBeanList(csvFileCisdod3, Cisdod3.class);

@@ -209,6 +209,38 @@ public class Utils {
 		return out;	
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static String csvToDbf(String csvFilename, Class<?> cl) {
+		String out = null;
+		String dbfFilename = csvFilename.replace(".csv", ".DBF").replace(".CSV", ".DBF");
+		List<?> objectList = CsvUtils.readBeanList(csvFilename, cl);
+		if (objectList == null) { 
+			LOG.error("csvToDbf - " + csvFilename + ": Error reading input file" );
+			return null;
+		}
+		if (objectList.isEmpty()) {
+			LOG.error("csvToDbf - " + csvFilename + ": Input file is empty" );
+			return null;
+		}
+		if (cl.getSimpleName().equalsIgnoreCase("faktura")) {
+			out = storeFakturaToDbf((List<Faktura>) objectList, dbfFilename);
+			
+		} else if (cl.getSimpleName().equalsIgnoreCase("cisdod")) {
+			out = storeCisdodToDbf((List<Cisdod>) objectList, dbfFilename);
+			
+		} else if (cl.getSimpleName().equalsIgnoreCase("cisdod3")) {
+			out = storeCisdod3ToDbf((List<Cisdod3>) objectList, dbfFilename);
+			
+		} else if (cl.getSimpleName().equalsIgnoreCase("sup")) {
+			out = storeSupToDbf((List<Sup>) objectList, dbfFilename);
+			
+		} else {
+			LOG.error("csvToDbf - " + csvFilename + ": Invalid class '" + cl.getSimpleName() + "'" );
+			return null;
+		}
+		return out;
+	}
+	
 	
 	public static int dbfGetRecordCount(String dbfFilename) {
 		FileInputStream stream = null;
@@ -713,6 +745,110 @@ public class Utils {
 		return outFilename;		
 	}
 	
+	
+	public static String storeFakturaToDbf(List<Faktura> objectList, String dbfFilename) {
+		DBFWriter writer = null;
+		FileOutputStream stream = null;
+		
+		String outFilename = null;
+		try {
+			if (objectList == null) throw new EnvException(ERR_MSG_NULLDATA);
+			if (dbfFilename == null) dbfFilename = Faktura.FILE_NAME;
+			File outFile = new File(dbfFilename);
+			outFilename = outFile.getAbsolutePath();
+			stream = new FileOutputStream(outFilename);
+			writer = new DBFWriter(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			DBFField[] fields = new DBFField[31];
+						
+			fields[0] = Utils.createDbField("PORCIS", DBFDataType.CHARACTER, 8, null);
+			fields[1] = Utils.createDbField("DODAVATEL", DBFDataType.CHARACTER, 20, null);
+			fields[2] = Utils.createDbField("ICOD", DBFDataType.CHARACTER, 11, null);
+			fields[3] = Utils.createDbField("SMLOUVA", DBFDataType.CHARACTER, 4, null);
+			fields[4] = Utils.createDbField("CISPART", DBFDataType.CHARACTER, 2, null);
+			fields[5] = Utils.createDbField("CISFA", DBFDataType.CHARACTER, 10, null);
+			fields[6] = Utils.createDbField("CASTKA", DBFDataType.NUMERIC, 12, 2);
+			
+			fields[7] = Utils.createDbField("UHRADA", DBFDataType.CHARACTER, 2, null);
+			fields[8] = Utils.createDbField("CUCTU", DBFDataType.CHARACTER, 20, null);
+			fields[9] = Utils.createDbField("BANKA", DBFDataType.CHARACTER, 4, null);
+			fields[10] = Utils.createDbField("VYSTAVENA", DBFDataType.DATE, 8, null);
+			fields[11] = Utils.createDbField("DOSLA", DBFDataType.DATE, 8, null);
+			fields[12] = Utils.createDbField("LIKVIDACE", DBFDataType.DATE, 8, null);
+			fields[13] = Utils.createDbField("VRACKPROP", DBFDataType.DATE, 8, null);
+
+			fields[14] = Utils.createDbField("VARIAB", DBFDataType.CHARACTER, 9, null);
+			fields[15] = Utils.createDbField("SPECIF", DBFDataType.CHARACTER, 10, null);
+			fields[16] = Utils.createDbField("DRUHFA", DBFDataType.CHARACTER, 1, null);
+			fields[17] = Utils.createDbField("SPLATNA", DBFDataType.DATE, 8, null);
+			fields[18] = Utils.createDbField("UHRAZENA", DBFDataType.DATE, 8, null);
+			fields[19] = Utils.createDbField("VRACENA", DBFDataType.DATE, 8, null);
+			fields[20] = Utils.createDbField("ZAUCTOVANO", DBFDataType.DATE, 8, null);
+			
+			fields[21] = Utils.createDbField("SUP", DBFDataType.CHARACTER, 20, null);
+			fields[22] = Utils.createDbField("ICOS", DBFDataType.CHARACTER, 11, null);
+			fields[23] = Utils.createDbField("PU", DBFDataType.CHARACTER, 1, null);
+			fields[24] = Utils.createDbField("KODPROJ", DBFDataType.CHARACTER, 21, null);
+			fields[25] = Utils.createDbField("PROCENTAZA", DBFDataType.NUMERIC, 2, 0);
+			fields[26] = Utils.createDbField("CASTKAZA", DBFDataType.NUMERIC, 12, 2);
+			fields[27] = Utils.createDbField("SPLATNAZA", DBFDataType.DATE, 8, null);
+			fields[28] = Utils.createDbField("CASTKAZACA", DBFDataType.NUMERIC, 12, 2);
+			fields[29] = Utils.createDbField("UHRAZENAZA", DBFDataType.DATE, 8, null);
+			fields[30] = Utils.createDbField("CASTKABDPH", DBFDataType.NUMERIC, 12, 2);
+			
+			writer.setFields(fields);			
+
+			Object[] rowData = null;			
+			for (Faktura item:objectList) {
+				rowData = new Object[31];
+				rowData[0] = item.getPorcis();
+				rowData[1] = item.getDodavatel();
+				rowData[2] = item.getIcod();
+				rowData[3] = item.getSmlouva();
+				rowData[4] = item.getCispart();
+				rowData[5] = item.getCisfa();
+				rowData[6] = item.getCastka();
+				
+				rowData[7] = item.getUhrada();
+				rowData[8] = item.getCuctu();
+				rowData[9] = item.getBanka();
+				rowData[10] = item.getVystavena();
+				rowData[11] = item.getDosla();
+				rowData[12] = item.getLikvidace();
+				rowData[13] = item.getVrackprop();
+				
+				
+				rowData[14] = item.getVariab();
+				rowData[15] = item.getSpecif();
+				rowData[16] = item.getDruhfa();
+				rowData[17] = item.getSplatna();
+				rowData[18] = item.getUhrazena();
+				rowData[19] = item.getVracena();
+				rowData[20] = item.getZauctovano();
+				
+				rowData[21] = item.getSup();
+				rowData[22] = item.getIcos();
+				rowData[23] = item.getPu();
+				rowData[24] = item.getKodproj();
+				rowData[25] = item.getProcentaza();
+				rowData[26] = item.getCastkaza();
+				rowData[27] = item.getSplatnaza();
+				rowData[28] = item.getCastkazaca();
+				rowData[29] = item.getUhrazenaza();
+				rowData[30] = item.getCastkabdph();
+				
+				writer.addRecord(rowData);
+			}
+		} catch (Exception e) {
+			LOG.error("storeFakturaToDbf: {}", e.getMessage(), e);
+			outFilename = null;
+			
+		} finally {
+			DBFUtils.close(writer);
+			DBFUtils.close(stream);			
+		}
+		return outFilename;		
+	}
+
 	
 	public static DBFField createDbField(String fieldName, DBFDataType fieldType, Integer length, Integer decimal) {
 		DBFField field = new DBFField();
