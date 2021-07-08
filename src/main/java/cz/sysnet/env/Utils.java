@@ -13,15 +13,15 @@ import java.security.Provider;
 import java.security.Provider.Service;
 import java.security.Security;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.linuxense.javadbf.DBFDataType;
 import com.linuxense.javadbf.DBFField;
@@ -40,9 +40,7 @@ public class Utils {
 	public static final String DEFAULT_CHARSET_NAME_DBF = "Cp1250";
 	public static final String DEFAULT_CHARSET_NAME_OTPUT = "utf-8";
 	private static final String ERR_MSG_NULLDATA = "Vstupní data jsou null";
-	
-	private static final Logger LOG = LogManager.getLogger(Utils.class);
-	
+	private static final Logger LOG = Logger.getLogger(Utils.class.getName());
 	private static int dotCounter = 0;
 	
 	
@@ -51,13 +49,11 @@ public class Utils {
 	}
 	
 	public static boolean logChecker() {
-		LOG.trace("start");
-		LOG.debug("debug message");
+		LOG.finest("finest message");
+		LOG.fine("fine message");
 		LOG.info("info message");
-		LOG.warn("warning message");
-		LOG.error("error message");
-		LOG.trace("end");
-		
+		LOG.warning("warning message");
+		LOG.severe("severe message");
 		return true;
 			
 	}
@@ -76,6 +72,7 @@ public class Utils {
 		DBFReader reader = null;
 		Writer writer = null;
 		String out = null;
+		String msg = "";
 		
 		try {
 			if (dbfFileName == null) throw new EnvException("Chybí vstupní DBF");
@@ -118,11 +115,13 @@ public class Utils {
 			}
 			writer.flush();
 			out = outFile.getAbsolutePath();
-			LOG.info("dbfToCsv: written file {}", out);
+			msg = MessageFormat.format("dbfToCsv: written file {}", out);
+			LOG.info(msg);
 			
 			
 		} catch (Exception e) {
-			LOG.error("dbfToCsv: {}", e.getMessage(), e);
+			msg = MessageFormat.format("dbfToCsv: {}", e.getMessage(), e);
+			LOG.severe(msg);
 			out = null;
 			
 		} finally {
@@ -195,11 +194,11 @@ public class Utils {
 			}
 			writer.flush();
 			out = outFile.getAbsolutePath();
-			LOG.info("dbfToCsv: written file {}", out);
+			LOG.info(MessageFormat.format("dbfToCsv: written file {}", out));
 			
 			
 		} catch (Exception e) {
-			LOG.error("dbfToCsv: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("dbfToCsv: {}", e.getMessage(), e));
 			out = null;
 			
 		} finally {
@@ -215,11 +214,11 @@ public class Utils {
 		String dbfFilename = csvFilename.replace(".csv", ".DBF").replace(".CSV", ".DBF");
 		List<?> objectList = CsvUtils.readBeanList(csvFilename, cl);
 		if (objectList == null) { 
-			LOG.error("csvToDbf - " + csvFilename + ": Error reading input file" );
+			LOG.severe("csvToDbf - " + csvFilename + ": Error reading input file" );
 			return null;
 		}
 		if (objectList.isEmpty()) {
-			LOG.error("csvToDbf - " + csvFilename + ": Input file is empty" );
+			LOG.severe("csvToDbf - " + csvFilename + ": Input file is empty" );
 			return null;
 		}
 		if (cl.getSimpleName().equalsIgnoreCase("faktura")) {
@@ -235,7 +234,7 @@ public class Utils {
 			out = storeSupToDbf((List<Sup>) objectList, dbfFilename);
 			
 		} else {
-			LOG.error("csvToDbf - " + csvFilename + ": Invalid class '" + cl.getSimpleName() + "'" );
+			LOG.severe("csvToDbf - " + csvFilename + ": Invalid class '" + cl.getSimpleName() + "'" );
 			return null;
 		}
 		return out;
@@ -250,10 +249,10 @@ public class Utils {
 			stream = new FileInputStream(dbfFilename);
 			reader = new DBFReader(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			out = reader.getRecordCount();
-			LOG.info("dbfGetRecordCount: dbf {}, recnum={}", dbfFilename, out);
+			LOG.info(MessageFormat.format("dbfGetRecordCount: dbf {}, recnum={}", dbfFilename, out));
 			
 		} catch (Exception e) {
-			LOG.error("getRecordCount: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("getRecordCount: {}", e.getMessage(), e));
 			out = 0;
 			
 		} finally {
@@ -309,9 +308,9 @@ public class Utils {
 				j++;
 			}
 			String value = dbfFilename + ", " + Integer.toString(fromItem) + ", " + Integer.toString(itemCount);
-			LOG.info("loadSupList: {} done", value);
+			LOG.info(MessageFormat.format("loadSupList: {} done", value));
 		} catch (Exception e) {
-			LOG.error("loadSupList: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("loadSupList: {}", e.getMessage(), e));
 			out = null;
 			
 		} finally {
@@ -369,7 +368,7 @@ public class Utils {
 				j++;
 			}
 		} catch (Exception e) {
-			LOG.error("loadCisdodList: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("loadCisdodList: {}", e.getMessage(), e));
 			out = null;
 			
 		} finally {
@@ -445,7 +444,7 @@ public class Utils {
 				j++;
 			}
 		} catch (Exception e) {
-			LOG.error("loadCisdod3List: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("loadCisdod3List: {}", e.getMessage(), e));
 			out = null;
 			
 		} finally {
@@ -470,7 +469,7 @@ public class Utils {
 			fcnt = reader.getFieldCount();
 			rcnt = reader.getRecordCount();		
 			String value = dbfFilename + ", rows=" + Integer.toString(rcnt);
-			LOG.info("checkFaktura: {}", value);
+			LOG.info(MessageFormat.format("checkFaktura: {}", value));
 			
 			DBFRow dbfRow = null;
 			while (((dbfRow = reader.nextRow()) != null)) {
@@ -510,13 +509,13 @@ public class Utils {
 				fa.setCastkabdph(dbfRow.getDouble(i)); i++;	// 30		
 
 			}					
-			LOG.info("checkFaktura: {} OK", dbfFilename);
+			LOG.info(MessageFormat.format("checkFaktura: {} OK", dbfFilename));
 			out = true;			
 		} catch (Exception e) {
 			String msg = "ROW: " + Integer.toString(j) + "/" + Integer.toString(rcnt);
 			msg += ", COL: " + Integer.toString(i) + "/" + Integer.toString(fcnt);
 			msg += ": " + e.getMessage();
-			LOG.error("checkFaktura: {}", msg, e);
+			LOG.severe(MessageFormat.format("checkFaktura: {}", msg, e));
 			out = false;
 		} finally {
 			DBFUtils.close(reader);
@@ -599,7 +598,7 @@ public class Utils {
 			String msg = "ROW: " + Integer.toString(m) + "/" + Integer.toString(rcnt);
 			msg += ", COL: " + Integer.toString(n) + "/" + Integer.toString(fcnt);
 			msg += ": " + e.getMessage();
-			LOG.error("loadFakturaList: {}", msg, e);			
+			LOG.severe(MessageFormat.format("loadFakturaList: {}", msg, e));			
 			out = null;
 			
 		} finally {
@@ -633,7 +632,7 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			LOG.error("storeSupToDbf: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("storeSupToDbf: {}", e.getMessage(), e));
 			outFilename = null;
 			
 		} finally {
@@ -681,7 +680,7 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			LOG.error("storeCisdodToDbf: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("storeCisdodToDbf: {}", e.getMessage(), e));
 			outFilename = null;
 			
 		} finally {
@@ -735,7 +734,7 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			LOG.error("storeCisdod3ToDbf: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("storeCisdod3ToDbf: {}", e.getMessage(), e));
 			outFilename = null;
 			
 		} finally {
@@ -839,7 +838,7 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			LOG.error("storeFakturaToDbf: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("storeFakturaToDbf: {}", e.getMessage(), e));
 			outFilename = null;
 			
 		} finally {
@@ -902,7 +901,7 @@ public class Utils {
 			}
 			return stringBuilder.toString();
 		} catch (NoSuchAlgorithmException e) {			
-			LOG.error("hash: {}", e.getMessage(), e);
+			LOG.severe(MessageFormat.format("hash: {}", e.getMessage(), e));
 		}
 		return null;
 	}
@@ -1011,5 +1010,4 @@ public class Utils {
 		}
 		return out;
 	}
-
 }

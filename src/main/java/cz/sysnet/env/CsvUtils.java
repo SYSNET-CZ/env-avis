@@ -13,9 +13,7 @@ import java.io.Writer;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.logging.Logger;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
@@ -25,21 +23,17 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 
 public class CsvUtils {
-	private static final Logger LOG = LogManager.getLogger(CsvUtils.class);
-	
+	private static final Logger LOG = Logger.getLogger(CsvUtils.class.getName());
 	private static final char DEFAULT_SEPARATOR = ',';
-
 	public static void writeLine(Writer w, List<String> values) throws IOException {
 		writeLine(w, values, DEFAULT_SEPARATOR, ' ');
 	}
-
 	public static void writeLine(Writer w, List<String> values, char separators) throws IOException {
 		writeLine(w, values, separators, ' ');
 	}
 
 	// https://tools.ietf.org/html/rfc4180
 	private static String followCVSformat(String value) {
-
 //		String result = encodeValue(value);
 		String result = value;
 		if (result.contains("\"")) {
@@ -132,30 +126,29 @@ public class CsvUtils {
 			LOG.info("writeBeanList" + beanList.getClass().getSimpleName());
 			out = filePath;
 			if (!exlist.isEmpty()) { 
-				LOG.error(exlist);
+				LOG.severe(exlist);
 				out += "\n" + exlist;
 			}
 			
 		} catch (FileNotFoundException e) {
-			LOG.error("writeBeanList", e);
+			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
 			System.out.println("writeBeanList ERROR (FileNotFoundException): " + e.getMessage());
 			e.printStackTrace();
 		} catch (CsvDataTypeMismatchException e) {
-			LOG.error("writeBeanList", e);
+			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
 			System.out.println("writeBeanList ERROR (CsvDataTypeMismatchException): " + e.getMessage());
 			e.printStackTrace();
 		} catch (CsvRequiredFieldEmptyException e) {
-			LOG.error("writeBeanList", e);
+			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
 			System.out.println("writeBeanList ERROR (CsvRequiredFieldEmptyException): " + e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
-			LOG.error("writeBeanList", e);
+			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
 			System.out.println("writeBeanList ERROR (IOException): " + e.getMessage());
 			e.printStackTrace();
 		}
 		return out;
 	}
-
 }
 
 
