@@ -16,7 +16,6 @@ public class TestReadDbf {
 	String dbfFileCisdod = "src/test/resources/CISDOD.DBF";
 	String dbfFileCisdod3 = "src/test/resources/CISDOD3.dbf";
 	String dbfFileFaktura = "src/test/resources/FAKTLN.DBF";
-	
 	String dbfFileCisdod3a = "src/test/resources/CISDOD3a.DBF";
 	
 	@Test

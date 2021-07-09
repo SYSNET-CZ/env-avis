@@ -16,10 +16,12 @@ public class Cisdod extends BaseEnvClass {
 	private static final long serialVersionUID = 1L;
 	
 	public static final String FILE_NAME = "CISDOD.DBF";
-	private static final List<String> DBF_FIELD_LIST = 
+	public static final List<String> DBF_FIELD_LIST = 
 			new ArrayList<String>(Arrays.asList(
 					"DODAVATEL", "SMLOUVA", "CISPART", "VARIAB", "SPECIF", "ICO", "DNY"
 					));
+	public static String[] CSV_HEADER = (String[]) DBF_FIELD_LIST.toArray(new String[DBF_FIELD_LIST.size()]);
+	
 	
 	@CsvBindByName(column = "DODAVATEL")
 	String dodavatel;		// Název dodavatele

@@ -16,7 +16,8 @@ public class Sup extends BaseEnvClass {
 	private static final long serialVersionUID = 1L;
 	
 	public static final String FILE_NAME = "SUP.DBF";
-	private static final List<String> DBF_FIELD_LIST = new ArrayList<String>(Arrays.asList("SUP", "ICO"));
+	public static final List<String> DBF_FIELD_LIST = new ArrayList<String>(Arrays.asList("SUP", "ICO"));
+	public static String[] CSV_HEADER = (String[]) DBF_FIELD_LIST.toArray(new String[DBF_FIELD_LIST.size()]);
 	
 	@CsvBindByName(column = "SUP")
 	String name;		// Název supervizora

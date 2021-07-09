@@ -12,7 +12,7 @@ public class Faktura  extends BaseEnvClass {
 	private static final long serialVersionUID = 1L;
 
 	public static final String FILE_NAME = "FaktLN.dbf";
-	private static final List<String> DBF_FIELD_LIST = 
+	public static final List<String> DBF_FIELD_LIST = 
 			new ArrayList<String>(Arrays.asList(
 					"PORCIS", "DODAVATEL", "ICOD", "SMLOUVA", "CISPART", "CISFA", "CASTKA", 
 					"UHRADA", "CUCTU", "BANKA", "VYSTAVENA", "DOSLA", "LIKVIDACE", "VRACKPROP", 
@@ -20,6 +20,8 @@ public class Faktura  extends BaseEnvClass {
 					"SUP", "ICOS", "PU", "KODPROJ", "PROCENTAZA", "CASTKAZA", "SPLATNAZA", "CASTKAZACA", 
 					"UHRAZENAZA", "CASTKABDPH"
 					));
+	public static String[] CSV_HEADER = (String[]) DBF_FIELD_LIST.toArray(new String[DBF_FIELD_LIST.size()]);
+	
 	
 	@CsvBindByName(column = "PORCIS")
 	String porcis;     	//Pořadové číslo faktury v AVISme

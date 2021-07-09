@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cz.sysnet.env</groupId>
 	<artifactId>env-avis</artifactId>
-	<version>1.1.4-SNAPSHOT</version>
+	<version>1.2.0-SNAPSHOT</version>
 	<organization>
 		<name>SYSNET s.r.o.</name>
 		<url>https:/sysnet.cz</url>
@@ -111,13 +111,13 @@
 			<version>3.10</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv 
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv --> 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 			<version>1.4</version>
 		</dependency>
-		-->
+		
 
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>

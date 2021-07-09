@@ -115,12 +115,12 @@ public class Utils {
 			}
 			writer.flush();
 			out = outFile.getAbsolutePath();
-			msg = MessageFormat.format("dbfToCsv: written file {}", out);
+			msg = MessageFormat.format("dbfToCsv: written file {0}", out);
 			LOG.info(msg);
 			
 			
 		} catch (Exception e) {
-			msg = MessageFormat.format("dbfToCsv: {}", e.getMessage(), e);
+			msg = MessageFormat.format("dbfToCsv: {0}", e);
 			LOG.severe(msg);
 			out = null;
 			
@@ -194,11 +194,11 @@ public class Utils {
 			}
 			writer.flush();
 			out = outFile.getAbsolutePath();
-			LOG.info(MessageFormat.format("dbfToCsv: written file {}", out));
+			LOG.info(MessageFormat.format("dbfToCsv: written file {0}", out));
 			
 			
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("dbfToCsv: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("dbfToCsv: {0}", e));
 			out = null;
 			
 		} finally {
@@ -249,10 +249,10 @@ public class Utils {
 			stream = new FileInputStream(dbfFilename);
 			reader = new DBFReader(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
 			out = reader.getRecordCount();
-			LOG.info(MessageFormat.format("dbfGetRecordCount: dbf {}, recnum={}", dbfFilename, out));
+			LOG.info(MessageFormat.format("dbfGetRecordCount: dbf {0}, recnum={1}", dbfFilename, out));
 			
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("getRecordCount: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("getRecordCount: {0}", e));
 			out = 0;
 			
 		} finally {
@@ -308,9 +308,9 @@ public class Utils {
 				j++;
 			}
 			String value = dbfFilename + ", " + Integer.toString(fromItem) + ", " + Integer.toString(itemCount);
-			LOG.info(MessageFormat.format("loadSupList: {} done", value));
+			LOG.info(MessageFormat.format("loadSupList: {0} done", value));
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("loadSupList: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("loadSupList: {0}", e));
 			out = null;
 			
 		} finally {
@@ -368,7 +368,7 @@ public class Utils {
 				j++;
 			}
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("loadCisdodList: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("loadCisdodList: {0}", e));
 			out = null;
 			
 		} finally {
@@ -444,7 +444,7 @@ public class Utils {
 				j++;
 			}
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("loadCisdod3List: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("loadCisdod3List: {0}", e));
 			out = null;
 			
 		} finally {
@@ -469,7 +469,7 @@ public class Utils {
 			fcnt = reader.getFieldCount();
 			rcnt = reader.getRecordCount();		
 			String value = dbfFilename + ", rows=" + Integer.toString(rcnt);
-			LOG.info(MessageFormat.format("checkFaktura: {}", value));
+			LOG.info(MessageFormat.format("checkFaktura: {0}", value));
 			
 			DBFRow dbfRow = null;
 			while (((dbfRow = reader.nextRow()) != null)) {
@@ -509,13 +509,13 @@ public class Utils {
 				fa.setCastkabdph(dbfRow.getDouble(i)); i++;	// 30		
 
 			}					
-			LOG.info(MessageFormat.format("checkFaktura: {} OK", dbfFilename));
+			LOG.info(MessageFormat.format("checkFaktura: {0} OK", dbfFilename));
 			out = true;			
 		} catch (Exception e) {
 			String msg = "ROW: " + Integer.toString(j) + "/" + Integer.toString(rcnt);
 			msg += ", COL: " + Integer.toString(i) + "/" + Integer.toString(fcnt);
 			msg += ": " + e.getMessage();
-			LOG.severe(MessageFormat.format("checkFaktura: {}", msg, e));
+			LOG.severe(MessageFormat.format("checkFaktura: {0} \n\t{1}", msg, e));
 			out = false;
 		} finally {
 			DBFUtils.close(reader);
@@ -598,7 +598,7 @@ public class Utils {
 			String msg = "ROW: " + Integer.toString(m) + "/" + Integer.toString(rcnt);
 			msg += ", COL: " + Integer.toString(n) + "/" + Integer.toString(fcnt);
 			msg += ": " + e.getMessage();
-			LOG.severe(MessageFormat.format("loadFakturaList: {}", msg, e));			
+			LOG.severe(MessageFormat.format("loadFakturaList: {0}\n\t{1}", msg, e));			
 			out = null;
 			
 		} finally {
@@ -632,7 +632,7 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("storeSupToDbf: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("storeSupToDbf: {0}", e));
 			outFilename = null;
 			
 		} finally {
@@ -680,7 +680,7 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("storeCisdodToDbf: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("storeCisdodToDbf: {0}", e));
 			outFilename = null;
 			
 		} finally {
@@ -734,7 +734,7 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("storeCisdod3ToDbf: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("storeCisdod3ToDbf: {0}", e));
 			outFilename = null;
 			
 		} finally {
@@ -838,7 +838,7 @@ public class Utils {
 				writer.addRecord(rowData);
 			}
 		} catch (Exception e) {
-			LOG.severe(MessageFormat.format("storeFakturaToDbf: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("storeFakturaToDbf: {0}", e));
 			outFilename = null;
 			
 		} finally {
@@ -901,7 +901,7 @@ public class Utils {
 			}
 			return stringBuilder.toString();
 		} catch (NoSuchAlgorithmException e) {			
-			LOG.severe(MessageFormat.format("hash: {}", e.getMessage(), e));
+			LOG.severe(MessageFormat.format("hash: {0}", e));
 		}
 		return null;
 	}
