@@ -7,7 +7,6 @@ import java.util.List;
 import org.junit.Test;
 
 import cz.sysnet.env.model.Cisdod3;
-import cz.sysnet.env.model.Faktura;
 
 public class TestCsv {
 	String csvFileSup = "src/test/resources/Sup.csv";
@@ -34,10 +33,4 @@ public class TestCsv {
 		System.out.println(outString);
 	}
 	
-	@Test
-	public void testBeanFaktura() {
-		List<?> out = CsvUtils.readBeanList(csvFileFaktura1, Faktura.class);
-		assertTrue(out != null);
-		System.out.println(out.size());
-	}
 }

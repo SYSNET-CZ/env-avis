@@ -19,6 +19,7 @@ import org.apache.commons.csv.CSVRecord;
 import cz.sysnet.env.model.Cisdod;
 import cz.sysnet.env.model.Cisdod3;
 import cz.sysnet.env.model.Faktura;
+import cz.sysnet.env.model.Smlouva;
 import cz.sysnet.env.model.Sup;
 
 public class CsvFactory {
@@ -108,6 +109,19 @@ public class CsvFactory {
     	return outList;
 	}
 	
+	public List<Smlouva> csvReadSmlouvaList(String csvFilename) {
+		this.csvReadRecordsIterable(csvFilename, Smlouva.CSV_HEADER);
+		if(this.csvRecords == null) return null;
+		List<Smlouva> outList = new ArrayList<Smlouva>();
+		for (CSVRecord record : this.csvRecords) {
+			Smlouva out = csvRecordToSmlouva(record);
+	    	outList.add(out);
+	    }
+		this.recycle();
+    	return outList;
+	}
+	
+	
 	public List<Faktura> csvReadFakturaList(String csvFilename) {
 		this.csvReadRecordsIterable(csvFilename, Faktura.CSV_HEADER);
 		if(this.csvRecords == null) return null;
@@ -179,6 +193,42 @@ public class CsvFactory {
 		}
 		return out;
 	}
+	
+	public static Smlouva csvRecordToSmlouva(CSVRecord record) {
+		if (record == null) return null;
+		Smlouva out = null;
+		try {
+			out = new Smlouva();
+	    	// "CISLOSMLOUVY", "TYP", "ZAKLADNISMLOUVA", "PREDMET", "DNY",
+			out.setCisloSmlouvy(record.get(Smlouva.CSV_HEADER[0]));
+			out.setTyp(record.get(Smlouva.CSV_HEADER[1]));
+			out.setZakladniSmlouva(record.get(Smlouva.CSV_HEADER[2]));
+			out.setPredmet(record.get(Smlouva.CSV_HEADER[3]));
+			out.setDny(Long.parseLong(record.get(Smlouva.CSV_HEADER[4])));
+	    	
+			// "DRUHFAKTURY", "KODPROJEKTU", "SAZBADPH", "CASTKA", "PROCENTOZAD", "VARSYMBOL",
+			out.setDruhFaktury(record.get(Smlouva.CSV_HEADER[5]));
+			out.setKodProjektu(record.get(Smlouva.CSV_HEADER[6]));
+			out.setSazbaDph(StringToDouble(record.get(Smlouva.CSV_HEADER[7])));
+			out.setCastka(StringToDouble(record.get(Smlouva.CSV_HEADER[8])));
+			out.setProcentoZad(StringToDouble(record.get(Smlouva.CSV_HEADER[9])));
+			out.setVarSymbol(record.get(Smlouva.CSV_HEADER[10]));
+			
+			// "SPECSYMBOL", "DATUMPODPISU", "ICO", "DODAVATEL"
+			out.setSpecSymbol(record.get(Smlouva.CSV_HEADER[11]));
+			out.setDatumPodpisu(StringToDate(record.get(Faktura.CSV_HEADER[12])));
+			out.setIco(record.get(Smlouva.CSV_HEADER[13]));
+			out.setDodavatel(record.get(Smlouva.CSV_HEADER[14]));
+			
+		} catch (Exception e) {
+			LOG.severe(MessageFormat.format("csvRecordToSmlouva: {0}", e));
+			out = null;
+		}
+		return out;
+	}
+	
+	
+	
 	
 	public static Faktura csvRecordToFaktura(CSVRecord record) {
 		if (record == null) return null;

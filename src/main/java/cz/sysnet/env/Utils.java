@@ -35,6 +35,7 @@ import com.opencsv.CSVWriter;
 import cz.sysnet.env.model.Cisdod;
 import cz.sysnet.env.model.Cisdod3;
 import cz.sysnet.env.model.Faktura;
+import cz.sysnet.env.model.Smlouva;
 import cz.sysnet.env.model.Sup;
 
 public class Utils {
@@ -167,7 +168,7 @@ public class Utils {
 			String [] rowHeaderArray = new String[numberOfFields];
 			for (int i = 0; i < numberOfFields; i++) {
 				DBFField field = reader.getField(i);
-				rowHeaderArray[i] = field.getName();
+				rowHeaderArray[i] = field.getName();		// TODO mapování
 			}
 			writer.writeNext(rowHeaderArray);
 			
@@ -413,6 +414,10 @@ public class Utils {
 		return CsvUtils.readBeanList(csvFilename, Faktura.class);
 	}
 	
+	public static List<?> loadSmlouvaListFromCsv(String csvFilename) {
+		return CsvUtils.readBeanList(csvFilename, Smlouva.class);
+	}
+	
 	public static List<Cisdod3> loadCisdod3List(String dbfFilename, int fromItem, int itemCount) {
 		return loadCisdod3ListFromDbf(dbfFilename, fromItem, itemCount);
 	}
@@ -454,6 +459,44 @@ public class Utils {
 		return out;
 	}
 	
+	
+//	public static List<Smlouva> loadSmlouvaListFromDbf(String dbfFilename, int fromItem, int itemCount) {
+//		List<Smlouva> out = null;
+//		DBFReader reader = null;
+//		
+//		try {
+//			reader = new DBFReader(new FileInputStream(dbfFilename), Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+//			int numberOfFields = reader.getFieldCount();
+//			boolean ok = false;
+//			List<String> fields = new ArrayList<String>();
+//			for (int i = 0; i < numberOfFields; i++) {
+//				DBFField field = reader.getField(i);
+//				fields.add(field.getName());				
+//			}
+//			if (fields.equals(Cisdod3.getDbfFieldList())) ok = true;
+//			if (!ok) {
+//				DBFUtils.close(reader);
+//				throw new EnvException("Datová struktura neodpovídá objektu 'Cisdod3'");
+//			}
+//			if (fromItem > 0) reader.skipRecords(fromItem);
+//			out = new ArrayList<Smlouva>();
+//			Object[] rowObjects;
+//			int j = 0;
+//			while (((rowObjects = reader.nextRecord()) != null) && ((j < itemCount) || (itemCount <= 0))) {
+//				out.add(loadSmlouvaFromRowobject(rowObjects));
+//				j++;
+//			}
+//		} catch (Exception e) {
+//			LOG.severe(MessageFormat.format("loadCisdod3List: {0}", e));
+//			out = null;
+//			
+//		} finally {
+//			DBFUtils.close(reader);
+//		}
+//		return out;
+//	}
+//	
+
 	public static boolean checkFakturaDbf(String dbfFilename) {
 		int i = 0;
 		int j = 0;
@@ -609,6 +652,71 @@ public class Utils {
 		return out;
 	}
 	
+	public static List<Smlouva> loadSmlouvaListFromDbf(String dbfFilename, int fromItem, int itemCount) {
+		List<Smlouva> out = null;
+		DBFReader reader = null;
+		FileInputStream stream = null; 
+		int m = 0;
+		int n = 0;
+		int rcnt = 0;
+		int fcnt = 0;
+		
+		try {
+			stream = new FileInputStream(dbfFilename);
+			reader = new DBFReader(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			int numberOfFields = reader.getFieldCount();
+			List<String> fields = new ArrayList<String>();
+			for (int i = 0; i < numberOfFields; i++) {
+				DBFField field = reader.getField(i);
+				fields.add(field.getName());				
+			}
+			if (!fields.equals(Faktura.getDbfFieldList())) { 
+				DBFUtils.close(reader);
+				throw new EnvException("Datová struktura neodpovídá objektu 'Smlouva'");
+			}
+			rcnt = reader.getRecordCount();			
+			if (fromItem > 0) reader.skipRecords(fromItem);
+			m = fromItem;
+			out = new ArrayList<Smlouva>();
+			DBFRow dbfRow = null;
+			int j = 0;
+			while (((dbfRow = reader.nextRow()) != null) && ((j < itemCount) || (itemCount <= 0))) {
+				m++;
+				Smlouva row = new Smlouva();
+				n = 0;				
+				row.setCisloSmlouvy(dbfRow.getString(n)); n++;		// 0
+				row.setTyp(dbfRow.getString(n)); n++;				// 1
+				row.setZakladniSmlouva(dbfRow.getString(n)); n++;	// 2
+				row.setPredmet(dbfRow.getString(n)); n++;			// 3
+				row.setDny(dbfRow.getInt(n)); n++;					// 4
+				row.setDruhFaktury(dbfRow.getString(n)); n++;		// 5
+				row.setKodProjektu(dbfRow.getString(n)); n++;		// 6
+				row.setSazbaDph(dbfRow.getDouble(n)); n++;			// 7
+				row.setCastka(dbfRow.getDouble(n)); n++;			// 8
+				row.setProcentoZad(dbfRow.getDouble(n)); n++;		// 9
+				row.setVarSymbol(dbfRow.getString(n)); n++;			// 10
+				row.setSpecSymbol(dbfRow.getString(n)); n++;		// 11
+				row.setDatumPodpisu(dbfRow.getDate(n)); n++;		// 12
+				row.setIco(dbfRow.getString(n)); n++;				// 13
+				row.setDodavatel(dbfRow.getString(n)); n++;			// 14
+				
+				out.add(row);
+				j++;
+			}
+		} catch (Exception e) {
+			String msg = "ROW: " + Integer.toString(m) + "/" + Integer.toString(rcnt);
+			msg += ", COL: " + Integer.toString(n) + "/" + Integer.toString(fcnt);
+			msg += ": " + e.getMessage();
+			LOG.severe(MessageFormat.format("loadSmlouvaList: {0}\n\t{1}", msg, e));			
+			out = null;
+			
+		} finally {
+			DBFUtils.close(reader);
+			DBFUtils.close(stream);			
+		}
+		return out;
+	}
+	
 	public static String storeSupToDbf(List<Sup> objectList, String dbfFilename) {
 		DBFWriter writer = null;
 		FileOutputStream stream = null;
@@ -744,6 +852,76 @@ public class Utils {
 		}
 		return outFilename;		
 	}
+	
+	public static String storeSmlouvaToDbf(List<Smlouva> objectList, String dbfFilename) {
+		DBFWriter writer = null;
+		FileOutputStream stream = null;
+		
+		String outFilename = null;
+		try {
+			if (objectList == null) throw new EnvException(ERR_MSG_NULLDATA);
+			if (dbfFilename == null) dbfFilename = Smlouva.FILE_NAME;
+			File outFile = new File(dbfFilename);
+			outFilename = outFile.getAbsolutePath();
+			stream = new FileOutputStream(outFilename);
+			writer = new DBFWriter(stream, Charset.forName(DEFAULT_CHARSET_NAME_DBF));
+			DBFField[] fields = new DBFField[15];
+			
+			// "CISLOSML", "TYP", "ZAKLSML", "PREDMET", "DNY", "DRUHFA",		
+			fields[0] = Utils.createDbField("CISLOSML", DBFDataType.CHARACTER, 5, null);
+			fields[1] = Utils.createDbField("TYP", DBFDataType.CHARACTER, 1, null);
+			fields[2] = Utils.createDbField("ZAKLSML", DBFDataType.CHARACTER, 5, null);
+			fields[3] = Utils.createDbField("PREDMET", DBFDataType.CHARACTER, 32, null);
+			fields[4] = Utils.createDbField("DNY", DBFDataType.NUMERIC, 6, 0);
+			fields[5] = Utils.createDbField("DRUHFA", DBFDataType.CHARACTER, 1, null);
+
+			// "KODPROJ", "SAZBADPH", "CASTKA", "PROCENTOZA", "VARSYMBOL",			
+			fields[6] = Utils.createDbField("KODPROJ", DBFDataType.CHARACTER, 21, null);
+			fields[7] = Utils.createDbField("SAZBADPH", DBFDataType.NUMERIC, 4, 2);
+			fields[8] = Utils.createDbField("CASTKA", DBFDataType.NUMERIC, 12, 2);
+			fields[9] = Utils.createDbField("PROCENTOZA", DBFDataType.NUMERIC, 2, 0);
+			fields[10] = Utils.createDbField("VARSYMBOL", DBFDataType.CHARACTER, 9, null);
+			
+			// "SPECSYMBOL", "DATPODPIS", "ICO", DODAVATEL
+			fields[11] = Utils.createDbField("SPECSYMBOL", DBFDataType.CHARACTER, 10, null);
+			fields[12] = Utils.createDbField("DATPODPIS", DBFDataType.DATE, 8, null);
+			fields[13] = Utils.createDbField("ICO", DBFDataType.CHARACTER, 12, null);
+			fields[14] = Utils.createDbField("DODAVATEL", DBFDataType.CHARACTER, 20, null);
+									
+			writer.setFields(fields);
+			
+			Object[] rowData = null;			
+			for (Smlouva item:objectList) {
+				rowData = new Object[15];
+				rowData[0] = item.getCisloSmlouvy();
+				rowData[1] = item.getTyp();
+				rowData[2] = item.getZakladniSmlouva();
+				rowData[3] = item.getPredmet();
+				rowData[4] = item.getDny();
+				rowData[5] = item.getDruhFaktury();
+				rowData[6] = item.getKodProjektu();
+				rowData[7] = item.getSazbaDph();
+				rowData[8] = item.getCastka();
+				rowData[9] = item.getProcentoZad();
+				rowData[10] = item.getVarSymbol();
+				rowData[11] = item.getSpecSymbol();
+				rowData[12] = item.getDatumPodpisu();
+				rowData[13] = item.getIco();
+				rowData[14] = item.getDodavatel();
+				
+				writer.addRecord(rowData);
+			}
+		} catch (Exception e) {
+			LOG.severe(MessageFormat.format("storeSmlouvaToDbf: {0}", e));
+			outFilename = null;
+			
+		} finally {
+			DBFUtils.close(writer);
+			DBFUtils.close(stream);			
+		}
+		return outFilename;		
+	}
+	
 	
 	
 	public static String storeFakturaToDbf(List<Faktura> objectList, String dbfFilename) {
@@ -955,6 +1133,11 @@ public class Utils {
 		return out;
 	}
 	
+	public static String storeSmlouvaBeanToCsv(List<Smlouva> objectList, String csvFilename) {
+		String out = CsvUtils.writeBeanList(csvFilename, objectList);
+		return out;
+	}
+	
 	public static String storeCisdodBeanToCsv(List<Cisdod> objectList, String csvFilename) {
 		String out = CsvUtils.writeBeanList(csvFilename, objectList);
 		return out;
@@ -979,6 +1162,11 @@ public class Utils {
 		}
 		return out;
 	}
+	
+	public static String storeSmlouvaToCsv(List<Smlouva> objectList, String csvFilename) {
+		return CsvUtils.writeSmlouvaList(csvFilename, objectList);
+	}
+	
 	
 	public static String storeCisdodToCsv(List<Cisdod> objectList, String csvFilename) {
 		String dbfFilename = csvFilename.replace(".csv", ".DBF").replace(".CSV", ".DBF");

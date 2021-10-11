@@ -12,14 +12,19 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.opencsv.CSVWriter;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
+import cz.sysnet.env.model.Smlouva;
 
 
 public class CsvUtils {
@@ -103,6 +108,57 @@ public class CsvUtils {
 			e.printStackTrace();
 		}		
 		return out;	
+	}
+	
+	public static String writeSmlouvaList(String filePath, List<Smlouva> objectList) {
+		String out = "";
+		try {			
+			BufferedWriter bWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath, true), StandardCharsets.UTF_8));
+			CSVWriter writer = new CSVWriter(bWriter, ',');
+
+			// feed in your array (or convert your data to an array)
+			String[] entries = Smlouva.CSV_HEADER;
+			writer.writeNext(entries);
+			
+			// "CISLOSMLOUVY", "TYP", "ZAKLADNISMLOUVA", "PREDMET", "DNY", 
+			// "DRUHFAKTURY", "KODPROJEKTU", "SAZBADPH", "CASTKA", "PROCENTOZAD", 
+			// "VARSYMBOL", "SPECSYMBOL", "DATUMPODPISU", "ICO", "DODAVATEL" 
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			for(int i = 0; i < objectList.size(); i++) {
+				Smlouva item = objectList.get(i);
+				entries[0] = item.getCisloSmlouvy();
+				entries[1] = item.getTyp();
+				entries[2] = item.getZakladniSmlouva();
+				entries[3] = item.getPredmet();
+				entries[4] = Long.toString(item.getDny());
+				entries[5] = item.getDruhFaktury();
+				entries[6] = item.getKodProjektu();
+				entries[7] = Double.toString(item.getSazbaDph());
+				entries[8] = Double.toString(item.getCastka());
+				entries[9] = Double.toString(item.getProcentoZad());
+				entries[10] = item.getVarSymbol();
+				entries[11] = item.getSpecSymbol();
+				String dataStr = "";
+				if (item.getDatumPodpisu() != null) dataStr = df.format(item.getDatumPodpisu());
+				entries[12] = dataStr;
+				entries[13] = item.getIco();
+				entries[14] = item.getDodavatel();
+				writer.writeNext(entries);
+			}
+			writer.close();
+			LOG.info("writeSmlouvaList" + Smlouva.class.getSimpleName());
+			out = filePath;
+			
+		} catch (FileNotFoundException e) {
+			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+			System.out.println("writeBeanList ERROR (FileNotFoundException): " + e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+			System.out.println("writeBeanList ERROR (IOException): " + e.getMessage());
+			e.printStackTrace();
+		}
+		return out;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
