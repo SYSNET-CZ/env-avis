@@ -13,7 +13,9 @@ import java.io.Writer;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -123,7 +125,6 @@ public class CsvUtils {
 			// "CISLOSMLOUVY", "TYP", "ZAKLADNISMLOUVA", "PREDMET", "DNY", 
 			// "DRUHFAKTURY", "KODPROJEKTU", "SAZBADPH", "CASTKA", "PROCENTOZAD", 
 			// "VARSYMBOL", "SPECSYMBOL", "DATUMPODPISU", "ICO", "DODAVATEL" 
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			for(int i = 0; i < objectList.size(); i++) {
 				Smlouva item = objectList.get(i);
 				entries[0] = item.getCisloSmlouvy();
@@ -133,14 +134,12 @@ public class CsvUtils {
 				entries[4] = Long.toString(item.getDny());
 				entries[5] = item.getDruhFaktury();
 				entries[6] = item.getKodProjektu();
-				entries[7] = Double.toString(item.getSazbaDph());
-				entries[8] = Double.toString(item.getCastka());
-				entries[9] = Double.toString(item.getProcentoZad());
+				entries[7] = doubleToCsv(item.getSazbaDph());
+				entries[8] = doubleToCsv(item.getCastka());
+				entries[9] = doubleToCsv(item.getProcentoZad());
 				entries[10] = item.getVarSymbol();
 				entries[11] = item.getSpecSymbol();
-				String dataStr = "";
-				if (item.getDatumPodpisu() != null) dataStr = df.format(item.getDatumPodpisu());
-				entries[12] = dataStr;
+				entries[12] = dateToCsv(item.getDatumPodpisu());
 				entries[13] = item.getIco();
 				entries[14] = item.getDodavatel();
 				writer.writeNext(entries);
@@ -150,12 +149,12 @@ public class CsvUtils {
 			out = filePath;
 			
 		} catch (FileNotFoundException e) {
-			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
-			System.out.println("writeBeanList ERROR (FileNotFoundException): " + e.getMessage());
+			LOG.severe("writeSmlouvaList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+			System.out.println("writeSmlouvaList ERROR (FileNotFoundException): " + e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
 			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
-			System.out.println("writeBeanList ERROR (IOException): " + e.getMessage());
+			System.out.println("writeSmlouvaList ERROR (IOException): " + e.getMessage());
 			e.printStackTrace();
 		}
 		return out;
@@ -202,6 +201,34 @@ public class CsvUtils {
 			LOG.severe("writeBeanList: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
 			System.out.println("writeBeanList ERROR (IOException): " + e.getMessage());
 			e.printStackTrace();
+		}
+		return out;
+	}
+	
+	private static String doubleToCsv(double d) {
+		String out = "";
+		try {
+			DecimalFormat df2 = new DecimalFormat("0.00");
+			out = df2.format(d).replace(",", ".");	
+		} catch (Exception e) {
+			LOG.severe("doubleToCsv: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+			System.out.println("doubleToCsv ERROR (Exception): " + e.getMessage());
+			e.printStackTrace();
+			out = "0.0";
+		}
+		return out;
+	}
+	
+	private static String dateToCsv(Date d) {
+		String out = "";
+		try {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			if (d != null) out = df.format(d);
+		} catch (Exception e) {
+			LOG.severe("dateToCsv: (" + e.getClass().getSimpleName() + "): " + e.getMessage());
+			System.out.println("dateToCsv ERROR (Exception): " + e.getMessage());
+			e.printStackTrace();
+			out = "";
 		}
 		return out;
 	}

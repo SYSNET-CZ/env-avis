@@ -10,8 +10,8 @@ import org.junit.Test;
 import cz.sysnet.env.model.Smlouva;
 
 public class TestSmlouvy {
-	static String CSV_FILE_SMLOUVY_TEST = "src/test/resources/SMLOUVY_TEST.CSV";
-	static String CSV_FILE_SMLOUVY_20_TEST = "src/test/resources/SMLOUVY_TEST_20.CSV";
+	static String CSV_FILE_SMLOUVY_TEST = "src/test/resources/SMLOUVY_TESTa.CSV";
+	static String CSV_FILE_SMLOUVY_20_TEST = "src/test/resources/SMLOUVY_TEST_20a.CSV";
 	static String CSV_FILE_SMLOUVY_OUT1 = "src/test/resources/SMLOUVY_OUT1.CSV";
 	static String CSV_FILE_SMLOUVY_OUT2 = "src/test/resources/SMLOUVY_OUT2.CSV";
 	static String CSV_FILE_SMLOUVY_OUT3 = "src/test/resources/SMLOUVY_OUT3.CSV";

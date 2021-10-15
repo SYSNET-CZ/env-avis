@@ -29,7 +29,6 @@ public class Smlouva  extends BaseEnvClass {
 					"TYP",
 					"ZAKLSML",
 					"PREDMET",
-					// "PORADIPART",
 					"DNY",
 					"DRUHFA",
 					"KODPROJ",
@@ -38,10 +37,7 @@ public class Smlouva  extends BaseEnvClass {
 					"PROCENTOZA",
 					"VARSYMBOL",
 					"SPECSYMBOL",
-					// "CISLOJEDN",
-					// "CISLOEVID",
 					"DATPODPIS",
-					//"DATUCIN",
 					"ICO",
 					"DODAVATEL"
 					));
@@ -52,7 +48,6 @@ public class Smlouva  extends BaseEnvClass {
 					"TYP",
 					"ZAKLADNISMLOUVA",
 					"PREDMET",
-					// "PORADIPARTNERA",
 					"DNY",
 					"DRUHFAKTURY",
 					"KODPROJEKTU",
@@ -61,10 +56,7 @@ public class Smlouva  extends BaseEnvClass {
 					"PROCENTOZAD",
 					"VARSYMBOL",
 					"SPECSYMBOL",
-					// "CISLOJEDNACI",
-					//"CISLOEVIDENCNI",
 					"DATUMPODPISU",
-					// "DATUMUCINNOSTI",
 					"ICO", 
 					"DODAVATEL"
 					));
@@ -83,9 +75,6 @@ public class Smlouva  extends BaseEnvClass {
 	
 	@CsvBindByName(column = "PREDMET")
 	private String predmet;
-	
-//	@CsvBindByName(column = "PORADIPARTNERA")
-//	private String poradiPartnera;
 	
 	@CsvBindByName(column = "DNY")
 	private long dny;
@@ -111,19 +100,9 @@ public class Smlouva  extends BaseEnvClass {
 	@CsvBindByName(column = "SPECSYMBOL")
 	private String specSymbol;
 	
-//	@CsvBindByName(column = "CISLOJEDNACI")
-//	private String cisloJednaci;
-//	
-//	@CsvBindByName(column = "CISLOEVIDENCNI")
-//	private String cisloEvidencni;
-	
 	@CsvBindByName(column = "DATUMPODPISU")
 	@CsvDate("yyyy-MM-dd")
 	private Date datumPodpisu;      
-	
-//	@CsvBindByName(column = "DATUMUCINNOSTI")
-//	@CsvDate("yyyy-MM-dd")
-//	private Date datumUcinnosti;      
 	
 	@CsvBindByName(column = "ICO")
 	private String ico;
